@@ -19,6 +19,8 @@ public:
 
     std::vector<std::string> splitLine(const std::string& line, char separator);
 
+    std::string trimString(const std::string& str) ;
+
     ~Parser();
 };
 

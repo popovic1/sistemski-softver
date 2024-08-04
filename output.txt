@@ -1,0 +1,32 @@
+# Compiler
+CXX = g++
+
+# Compiler flags
+CXXFLAGS = -std=c++11 -Wall -Iinclude
+
+# Source files
+SRCS = source/main.cpp source/Assembler.cpp source/Parser.cpp
+
+# Object files
+OBJS = $(SRCS:.cpp=.o)
+
+# Executable name
+EXEC = project
+
+# Default target
+all: $(EXEC)
+
+# Linking
+$(EXEC): $(OBJS)
+	$(CXX) $(OBJS) -o $(EXEC)
+
+# Compilation
+source/%.o: source/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Clean up
+clean:
+	rm -f source/*.o $(EXEC)
+
+# Phony targets
+.PHONY: all clean

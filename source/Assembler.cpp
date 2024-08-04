@@ -22,6 +22,7 @@ void Assembler::compile(string inputFileName, string outputFileName){
 
         //handle labels
         for(string word : parsedLine){
+            word = parser->trimString(word);
             cout<< word + ' ';
         }
         cout<<'\n';

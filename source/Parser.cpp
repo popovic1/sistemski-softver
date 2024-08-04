@@ -31,3 +31,19 @@ std::vector<std::string> Parser::splitLine(const std::string& line, char separat
     
     return tokens;
 }
+
+// Remove commas and whitespaces from the beginning and end of a string
+std::string Parser::trimString(const std::string& str) {
+    const std::string chars = " ,";
+
+    size_t start = str.find_first_not_of(chars);
+    if (start == std::string::npos) {
+        return ""; // The string is all whitespace or commas
+    }
+
+    // Find the position of the last character not in the trim set
+    size_t end = str.find_last_not_of(chars);
+
+    // Return the substring from start to end
+    return str.substr(start, end - start + 1);
+}
