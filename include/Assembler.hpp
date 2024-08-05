@@ -1,7 +1,11 @@
 #include "Parser.hpp"
+#include "Section.hpp"
 #include <string>
-#ifndef ASSEMBLER_H_
-#define ASSEMBLER_H_
+
+using namespace std;
+
+#ifndef ASSEMBLER_HPP_
+#define ASSEMBLER_HPP_
 
 enum Operations {
     HALT, INT, IRET, CALL, RET, JMP, BEQ, BNE, BGT, PUSH, POP, XCHG, ADD, SUB,
@@ -18,6 +22,11 @@ public:
     Assembler();
 
     void compile(string inputFileName, string outputFileName);
+
+    void handleDirectives(std::vector<string> parsedLine);
+    void handleInstructions(std::vector<string> parsedLine);
+
+    void addSymbolToTheSymbolTable(string symbol);
 
     ~Assembler();
 };

@@ -11,15 +11,8 @@ int main(int argc, char** argv)
     char* o = argv[1];
     char* outputFileName = argv[2];
     char* inputFileName = argv[3];
-
-    cout<<inputFileName;
-    cout<<'\n';
-
-    cout<<outputFileName;
-    cout<<'\n';
     
-     if (strcmp(o, "-o") != 0 && (!inputFileName || !outputFileName))        
-    {
+    if (strcmp(o, "-o") != 0 && (!inputFileName || !outputFileName)){
         cout << "Command not valid." << endl;
         return -1;
     }
