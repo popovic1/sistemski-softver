@@ -1,9 +1,9 @@
 #include "../include/Assembler.hpp"
 
+
 Assembler::Assembler(){}
 
-void Assembler::handleDirectives(std::vector<string> parsedLine){
-    cout<<"Direktiva\n";
+int Assembler::handleDirectives(std::vector<string> parsedLine){
 
     if(parsedLine[0] == ".global")
     {
@@ -15,7 +15,34 @@ void Assembler::handleDirectives(std::vector<string> parsedLine){
     }
     else if (parsedLine[0] == ".section")
     {
-        
+        if(parsedLine.size()!=2){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+        // if(parsedLine[1].find('.')!=0){
+        //     cout<<"--------------------------------------------------------------"<<endl;
+        //     cerr<<"Error: Invalid section name. It must start with a '.'"<<endl;
+        //     cout<<"--------------------------------------------------------------"<<endl;
+        //     return -1;
+        // }
+
+        if(isValidIdentifier(parsedLine[1].substr(1))==false){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Invalid section name."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        if(Section::getActiveSection()!= nullptr){
+            //ovo mozda ne treba ako uvecavam size posle svake instrukcije
+            Section::getActiveSection()->setSize(currentLocation);
+        }
+
+        currentLocation = 0;
+        Section* newSection = new Section(parsedLine[1]);
+        Section::setActiveSection(newSection);
     }
     else if (parsedLine[0] == ".word")
     {
@@ -23,17 +50,20 @@ void Assembler::handleDirectives(std::vector<string> parsedLine){
     }
     else if (parsedLine[0] == ".skip")
     {
-        
+        // uvecaj currentLocation   
     }
     else if (parsedLine[0] == ".end")
     {
-        
+        if(Section::getActiveSection()!= nullptr){
+            //ovo mozda ne treba ako uvecavam size posle svake instrukcije
+            Section::getActiveSection()->setSize(currentLocation);
+        }
     }
+    return 0;
     
 }
 
-void Assembler::handleInstructions(std::vector<string> parsedLine){
-    cout<<"Instrukcija\n";
+int Assembler::handleInstructions(std::vector<string> parsedLine){
 
     if(parsedLine[0] == "halt")
     {
@@ -139,10 +169,37 @@ void Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         
     }
+
+    return 0;
 }
 
-void Assembler::addSymbolToTheSymbolTable(string symbol){
+bool Assembler::addSymbolToTheSymbolList(string symbol, int value, Scope scope, bool defined, Section* section){
     // TODO check if the symbol can be added and is valid (i.e. can't be 343ff55)
+    if(isValidIdentifier(symbol) == false){
+        cout<<"-----------------------------------------"<<endl;
+        std::cerr<<"Error: identifier name is not valid: " + symbol<<endl;
+        cout<<"-----------------------------------------"<<endl;
+        return false;
+    }
+    //TODO check if the symbol already exists and what shall be done in that case?
+    Symbol* newSymbol = new Symbol(symbol, value, scope, defined, section);
+    return true;
+}
+
+bool Assembler::isValidIdentifier(const std::string& name) {
+    if (name.empty()) {
+        return false;
+    }
+    if (!std::isalpha(name[0]) && name[0] != '_') {
+        return false;
+    }
+    for (char ch : name) {
+        if (!std::isalnum(ch) && ch != '_') {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void Assembler::compile(string inputFileName, string outputFileName){
@@ -159,7 +216,6 @@ void Assembler::compile(string inputFileName, string outputFileName){
             line.erase(hashtagPosition);
         }
         if(line.length() == 0)continue;
-        cout<<line + '\n';
         // parse a single line
         std::vector<string> parsedLine = parser->splitLine(line, ' ');
 
@@ -172,13 +228,17 @@ void Assembler::compile(string inputFileName, string outputFileName){
             //label: ...
 
             // label needs to be in a section
-            if(!Section::getActiveSection()){
-                // TODO generate an error
+            if(Section::getActiveSection() == nullptr){
+                cout<<"------------------------------------------"<<endl;
+                std::cerr<<"Error: Label needs to be in a section."<<endl;
+                cout<<"------------------------------------------"<<endl;
+                return;
             }
 
             //add a symbol to the symbol table
             parsedLine[0].pop_back();  // remove the ":" at the end of a label
-            addSymbolToTheSymbolTable(parsedLine[0]);
+            bool isSymbolAdded = addSymbolToTheSymbolList(parsedLine[0], currentLocation, Scope::LOCAL, true, Section::getActiveSection());
+            if(isSymbolAdded == false)return;
 
             //delete the first word of the line in case there is an instruction after the label
             parsedLine.erase(parsedLine.begin());
@@ -187,12 +247,18 @@ void Assembler::compile(string inputFileName, string outputFileName){
 
         if(parsedLine.front().find('.') == 0){
             // directives (.section, .equ itd.)
-            handleDirectives(parsedLine);
+            int success = handleDirectives(parsedLine);
+            if(success !=0)return;
         
         }else{
             // instructions 
-            handleInstructions(parsedLine);       
+            int success = handleInstructions(parsedLine);
+            if(success !=0)return;
+            currentLocation +=4;       
         }
 
     }
+
+    Section::printSectionList();
+    Symbol::printSymbolList();
 }

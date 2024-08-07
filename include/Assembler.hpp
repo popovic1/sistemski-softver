@@ -1,5 +1,6 @@
 #include "Parser.hpp"
 #include "Section.hpp"
+#include "Symbol.hpp"
 #include <string>
 
 using namespace std;
@@ -12,21 +13,25 @@ enum Operations {
     MUL, DIV, NOT, AND, OR, XOR, SHL, SHR, LD, ST, CSRRD, CSRWR, ERR_INS
 };
 
-enum Directives {
-    GLOBAL, EXTERN, SECTION, WORD, SKIP, END, ERROR
-};
+// enum Directives {
+//     GLOBAL, EXTERN, SECTION, WORD, SKIP, END, ERROR
+// };
 
 class Assembler{
+private:
+    int currentLocation = 0;
 
 public:
     Assembler();
 
     void compile(string inputFileName, string outputFileName);
 
-    void handleDirectives(std::vector<string> parsedLine);
-    void handleInstructions(std::vector<string> parsedLine);
+    int handleDirectives(std::vector<string> parsedLine);
+    int handleInstructions(std::vector<string> parsedLine);
 
-    void addSymbolToTheSymbolTable(string symbol);
+    bool addSymbolToTheSymbolList(string symbol, int value, Scope scope, bool defined, Section* section);
+
+    bool isValidIdentifier(const std::string& name);
 
     ~Assembler();
 };
