@@ -26,7 +26,41 @@ public:
 
     ~Symbol();
 
+    static Symbol* getSymbol(string name);
+
     static void printSymbolList();
+
+    string getName(){
+        return name;
+    }
+
+    int getValue(){
+        return value;
+    }
+
+    void setValue(int value){
+        this->value = value;
+    }
+
+    bool isDefined(){
+        return defined;
+    }
+
+    void setDefined(bool defined){
+        this->defined = defined;
+    }
+
+    Section* getSection(){
+        return section;
+    }
+
+    void setSection(Section* section){
+        this->section = section;
+    }
+
+    void setScope(Scope scope){
+        this->scope = scope;
+    }
 
 };
 

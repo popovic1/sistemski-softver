@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <iostream>
-#include <string>
+#include <string.h>
 #include "../include/Parser.hpp"
 #include "../include/Assembler.hpp"
 

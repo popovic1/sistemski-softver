@@ -1,0 +1,2 @@
+- Kako ce skip i word direktive da se detektuju od strane linkera?
+- TODO add support for section size calculation

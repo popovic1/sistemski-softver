@@ -13,6 +13,14 @@ Symbol::Symbol(string name, int value, Scope scope, bool defined, Section* secti
     
 }
 
+Symbol* Symbol::getSymbol(string name){
+    for(Symbol* tmp: symbolList){
+        if(tmp->name == name)
+            return tmp;
+    }
+    return nullptr;
+}
+
 void Symbol::printSymbolList(){
     std::cout<<"-------------------------Symbol table-------------------------------------"<<endl;
     std::cout<<"      Name           Value          Scope           Section        Defined"<<endl;
@@ -22,5 +30,6 @@ void Symbol::printSymbolList(){
     }
     std::cout<<"--------------------------------------------------------------------------"<<endl;
 }
+
 
 Symbol::~Symbol(){}

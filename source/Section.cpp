@@ -2,6 +2,8 @@
 
 Section *Section::activeSection = nullptr;
 
+Section *Section::undefinedSection = nullptr;
+
 std::vector<Section*> Section::sectionList;
 
 int Section::numberOfSections = 0;
@@ -9,6 +11,12 @@ int Section::numberOfSections = 0;
 Section::Section(std::string name){
     this->name = name;
     this->id = ++numberOfSections;
+    sectionList.push_back(this);
+}
+
+Section::Section(string name, int number){
+    this->name = name;
+    this->id = number;
     sectionList.push_back(this);
 }
 

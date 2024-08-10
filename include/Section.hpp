@@ -10,6 +10,7 @@ class Section{
 private:
 
     static Section *activeSection;
+    static Section *undefinedSection;
     static std::vector<Section*> sectionList;
     static int numberOfSections;
     int id;
@@ -17,11 +18,20 @@ private:
     int size = 0;
     std::string code = "";
 
+    Section(string name, int number);
+
 public:
     Section(std::string name);
     
     static Section* getActiveSection(){
         return activeSection;
+    }
+
+    static Section* getUndefinedSection(){
+        if(undefinedSection == nullptr){
+            undefinedSection = new Section("UND", 0);
+        }
+        return undefinedSection;
     }
 
     static void setActiveSection(Section *section){
@@ -56,8 +66,8 @@ public:
         this->code = code;
     }
 
-    void appendCode(string code){
-        this->code.append(code);
+    static void appendCode(string code){
+        activeSection->code.append(code);
     }
 
     static std::vector<Section*> getSectionList(){

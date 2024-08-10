@@ -2,7 +2,7 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -std=c++11 -Wall -Iinclude
+CXXFLAGS = -std=c++11 -Wall -g -O0 -Iinclude
 
 # Directories
 SRC_DIR = source

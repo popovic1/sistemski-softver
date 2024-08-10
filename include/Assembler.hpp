@@ -33,6 +33,12 @@ public:
 
     bool isValidIdentifier(const std::string& name);
 
+    int isNumber(std::string arg);
+
+    int hexToDecimal(string hex);
+
+    string decimalToLittleEndianHexString(int num);
+
     ~Assembler();
 };
 
