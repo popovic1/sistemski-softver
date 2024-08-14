@@ -36,8 +36,11 @@ public:
     int isNumber(std::string arg);
 
     int hexToDecimal(string hex);
-
     string decimalToLittleEndianHexString(int num);
+    string intToHexString(int num);
+
+    int isRegister(const std::string& reg);
+    int isCSR(string csr);
 
     ~Assembler();
 };

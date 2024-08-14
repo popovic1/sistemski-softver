@@ -1,6 +1,4 @@
 # file: main.s
-.equ tim_cfg, 0xFFFFFF10
-.equ init_sp, 0xFFFFFF00
 .extern handler
 .section my_code_main
 ld $init_sp, %sp

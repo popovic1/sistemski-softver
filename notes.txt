@@ -1,2 +1,3 @@
-- Kako ce skip i word direktive da se detektuju od strane linkera?
+- Kako ce skip i word direktive da se detektuju od strane linkera? Kako da ih ne izvrsava kao instrukcije?
 - TODO add support for section size calculation
+- Pazi kad popunjavas literal pool sekcije da ne ubacis stringove imena simbola koje si dodavao radi trazenja simbola u bazenu

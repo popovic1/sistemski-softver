@@ -11,6 +11,12 @@ enum Scope{
     LOCAL, GLOBAL
 };
 
+struct TNSEntry{
+    int location;
+    bool literalPool;
+    Section* section;
+};
+
 class Symbol{
 private:
     string name;
@@ -18,6 +24,7 @@ private:
     Section* section;
     Scope scope;
     bool defined;
+    vector<TNSEntry*> tns;
 
     static vector<Symbol*> symbolList;
 
@@ -60,6 +67,11 @@ public:
 
     void setScope(Scope scope){
         this->scope = scope;
+    }
+
+    void addTNSEntry(int location, bool isLiteralPool, Section* section){
+        TNSEntry* entry = new TNSEntry{location, isLiteralPool, section};
+        tns.push_back(entry);
     }
 
 };

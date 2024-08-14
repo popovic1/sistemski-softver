@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include "LiteralPool.hpp"
 
 using namespace std;
 
@@ -17,6 +18,7 @@ private:
     std::string name;
     int size = 0;
     std::string code = "";
+    LiteralPool* literalPool = new LiteralPool();
 
     Section(string name, int number);
 
@@ -64,6 +66,10 @@ public:
 
     void setCode(string code){
         this->code = code;
+    }
+
+    LiteralPool* getLiteralPool(){
+        return literalPool;
     }
 
     static void appendCode(string code){

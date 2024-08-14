@@ -57,6 +57,7 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
         if(Section::getActiveSection()!= nullptr){
             //ovo mozda ne treba ako uvecavam size posle svake instrukcije
             Section::getActiveSection()->setSize(currentLocation);
+            cout<<Section::getActiveSection()->getCode()<<endl;
         }
 
         currentLocation = 0;
@@ -155,99 +156,650 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
         cout<<Section::getActiveSection()->getCode()<<endl;
         return 1;
     }
+    else
+    {
+        cout<<"--------------------------------------------------------------"<<endl;
+        cerr<<"Error: Invalid directive."<<endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        return -1;
+    }
     return 0;
     
 }
 
 int Assembler::handleInstructions(std::vector<string> parsedLine){
 
+    const char hexDigits[] = "0123456789ABCDEF";
+
     if(parsedLine[0] == "halt")
     {
-
+        if(parsedLine.size() != 1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+        Section::appendCode(string(8, '0'));
     }
     else if (parsedLine[0] == "int")
     {
-        
+        if(parsedLine.size() != 1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+        Section::appendCode("10000000");
     }
     else if (parsedLine[0] == "iret")
     {
+        if(parsedLine.size() != 1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+        // TODO koja treba prvo da se radi
+        Section::appendCode("960E0004");
+        Section::appendCode("93FE0008");
         
+        currentLocation += 4;
     }
     else if (parsedLine[0] == "call")
     {
-        
+        if(parsedLine.size() != 2){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int isLiteral = isNumber(parsedLine[1]);
+        if(isLiteral == 0){ // decimal
+            // convert to hex
+            parsedLine[1] = "0x" + intToHexString(stoi(parsedLine[1]));
+            isLiteral = 1;
+        }
+
+        if(isLiteral == 1){ // hex
+            string hex = parsedLine[1].substr(2);
+            if(hex.length() <= 3){
+                while (hex.length() < 3) {
+                    hex = "0" + hex;
+                }
+                string code = "20000" + hex;
+                Section::appendCode(code);
+
+            }else{
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+
+                if(entry == nullptr){
+                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                }
+                
+                entry->positionsInCode.push_back(currentLocation + 2);
+
+                Section::appendCode("21F00000");
+            }
+
+        }else{ //symbol
+            Symbol* symbol = Symbol::getSymbol(parsedLine[1]);
+            if(symbol == nullptr){
+                symbol = new Symbol(parsedLine[1], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
+            if(entry == nullptr){
+                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
+            }
+
+            entry->positionsInCode.push_back(currentLocation + 2);
+            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            Section::appendCode("21F00000");
+        }
     }
     else if (parsedLine[0] == "ret")
     {
-        
+        if(parsedLine.size() != 1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+        Section::appendCode("93FE0004");   
     }
     else if (parsedLine[0] == "jmp")
     {
-        
+        if(parsedLine.size() != 2){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int isLiteral = isNumber(parsedLine[1]);
+        if(isLiteral == 0){ // decimal
+            // convert to hex
+            parsedLine[1] = "0x" + intToHexString(stoi(parsedLine[1]));
+            isLiteral = 1;
+        }
+
+        if(isLiteral == 1){ // hex
+            string hex = parsedLine[1].substr(2);
+            if(hex.length() <= 3){
+                while (hex.length() < 3) {
+                    hex = "0" + hex;
+                }
+                string code = "30000" + hex;
+                Section::appendCode(code);
+
+            }else{
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+
+                if(entry == nullptr){
+                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                }
+                
+                entry->positionsInCode.push_back(currentLocation + 2);
+
+                Section::appendCode("38F00000");
+            }
+
+        }else{ //symbol
+            Symbol* symbol = Symbol::getSymbol(parsedLine[1]);
+            if(symbol == nullptr){
+                symbol = new Symbol(parsedLine[1], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
+            if(entry == nullptr){
+                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
+            }
+
+            entry->positionsInCode.push_back(currentLocation + 2);
+            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            Section::appendCode("38F00000");
+        }
     }
     else if (parsedLine[0] == "beq")
     {
-        
+        if(parsedLine.size() != 4){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax: " + to_string(parsedLine.size())<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int isLiteral = isNumber(parsedLine[3]);
+        if(isLiteral == 0){ // decimal
+            // convert to hex
+            parsedLine[3] = "0x" + intToHexString(stoi(parsedLine[3]));
+            isLiteral = 1;
+        }
+
+        if(isLiteral == 1){ // hex
+            string hex = parsedLine[3].substr(2);
+            if(hex.length() <= 3){
+                while (hex.length() < 3) {
+                    hex = "0" + hex;
+                }
+                string code = "310" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + hex;
+                Section::appendCode(code);
+
+            }else{
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+
+                if(entry == nullptr){
+                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                }
+                
+                entry->positionsInCode.push_back(currentLocation + 2);
+
+                Section::appendCode("39F" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
+            }
+
+        }else{ //symbol
+            Symbol* symbol = Symbol::getSymbol(parsedLine[3]);
+            if(symbol == nullptr){
+                symbol = new Symbol(parsedLine[3], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
+            if(entry == nullptr){
+                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
+            }
+
+            entry->positionsInCode.push_back(currentLocation + 2);
+            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            Section::appendCode("39F" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
+        }
     }
     else if (parsedLine[0] == "bne")
     {
-        
+        if(parsedLine.size() != 4){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int isLiteral = isNumber(parsedLine[3]);
+        if(isLiteral == 0){ // decimal
+            // convert to hex
+            parsedLine[3] = "0x" + intToHexString(stoi(parsedLine[3]));
+            isLiteral = 1;
+        }
+
+        if(isLiteral == 1){ // hex
+            string hex = parsedLine[3].substr(2);
+            if(hex.length() <= 3){
+                while (hex.length() < 3) {
+                    hex = "0" + hex;
+                }
+                string code = "320" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + hex;
+                Section::appendCode(code);
+
+            }else{
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+
+                if(entry == nullptr){
+                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                }
+                
+                entry->positionsInCode.push_back(currentLocation + 2);
+
+                Section::appendCode("3AF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
+            }
+
+        }else{ //symbol
+            Symbol* symbol = Symbol::getSymbol(parsedLine[3]);
+            if(symbol == nullptr){
+                symbol = new Symbol(parsedLine[3], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
+            if(entry == nullptr){
+                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
+            }
+
+            entry->positionsInCode.push_back(currentLocation + 2);
+            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            Section::appendCode("3AF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
+        }
     }
     else if (parsedLine[0] == "bgt")
     {
-        
+        if(parsedLine.size() != 4){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int isLiteral = isNumber(parsedLine[3]);
+        if(isLiteral == 0){ // decimal
+            // convert to hex
+            parsedLine[3] = "0x" + intToHexString(stoi(parsedLine[3]));
+            isLiteral = 1;
+        }
+
+        if(isLiteral == 1){ // hex
+            string hex = parsedLine[3].substr(2);
+            if(hex.length() <= 3){
+                while (hex.length() < 3) {
+                    hex = "0" + hex;
+                }
+                string code = "330" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + hex;
+                Section::appendCode(code);
+
+            }else{
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+
+                if(entry == nullptr){
+                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                }
+                
+                entry->positionsInCode.push_back(currentLocation + 2);
+
+                Section::appendCode("3BF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
+            }
+
+        }else{ //symbol
+            Symbol* symbol = Symbol::getSymbol(parsedLine[3]);
+            if(symbol == nullptr){
+                symbol = new Symbol(parsedLine[3], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
+            if(entry == nullptr){
+                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
+            }
+
+            entry->positionsInCode.push_back(currentLocation + 2);
+            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            Section::appendCode("3BF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
+        }
     }
     else if (parsedLine[0] == "push")
     {
-        
+        if(parsedLine.size() != 2){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum = isRegister(parsedLine[1].substr(1));
+
+        if(parsedLine[1][0] != '%'|| regNum == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "81E0" + string(1, hexDigits[regNum]) + "FFC";
+
+        Section::appendCode(code);   
     }
     else if (parsedLine[0] == "pop")
     {
-        
+        if(parsedLine.size() != 2){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum = isRegister(parsedLine[1].substr(1));
+
+        if(parsedLine[1][0] != '%'|| regNum == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "93" + string(1, hexDigits[regNum]) + "E0004";
+
+        Section::appendCode(code);   
     }
     else if (parsedLine[0] == "xchg")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "400" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "add")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "50" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "sub")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "51" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "mul")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "52" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "div")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "53" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "not")
     {
-        
+        if(parsedLine.size() != 2){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+
+        if(parsedLine[1][0] != '%' || regNum1 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "60" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum1]) + "0000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "and")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "61" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "or")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "62" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "xor")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "63" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "shl")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "70" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "shr")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum1 = isRegister(parsedLine[1].substr(1));
+        int regNum2 = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "71" + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum2]) + string(1, hexDigits[regNum1]) + "000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "ld")
     {
@@ -259,11 +811,55 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     }
     else if (parsedLine[0] == "csrrd")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int csrReg = isCSR(parsedLine[1].substr(1));
+        int regNum = isRegister(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || csrReg == -1 || regNum == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a csr/register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "90" + string(1, hexDigits[regNum]) + string(1, hexDigits[csrReg]) + "0000";
+
+        Section::appendCode(code);
     }
     else if (parsedLine[0] == "csrwr")
     {
-        
+        if(parsedLine.size() != 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        int regNum = isRegister(parsedLine[1].substr(1));
+        int csrReg = isCSR(parsedLine[2].substr(1));
+
+        if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || csrReg == -1 || regNum == -1){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Parameter is not a csr/register or doesn't start with '%'."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }
+
+        string code = "94" + string(1, hexDigits[csrReg]) + string(1, hexDigits[regNum]) + "0000";
+
+        Section::appendCode(code);
+    }
+    else{
+        cout<<"--------------------------------------------------------------"<<endl;
+        cerr<<"Error: Invalid instruction."<<endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        return -1;
     }
 
     return 0;
@@ -293,7 +889,8 @@ bool Assembler::addSymbolToTheSymbolList(string name, int value, Scope scope, bo
             cout<<"-----------------------------------------"<<endl;
 
             return false;
-        }else{
+        }else
+        {
             existingSymbol->setValue(value);
             existingSymbol->setDefined(true);
             existingSymbol->setSection(section); // TODO da li ovo treba??? - Mora
@@ -385,6 +982,60 @@ string Assembler::decimalToLittleEndianHexString(int num) {
     }
 
     return littleEndianHexStr;
+}
+
+string Assembler::intToHexString(int num) {
+    stringstream ss;
+    ss << std::hex << num; // Convert integer to hexadecimal
+    return ss.str();       // Return the hexadecimal string
+}
+
+int Assembler::isRegister(const std::string& reg) {
+    if (reg.empty()) {
+        return -1; 
+    }
+
+    std::string regName = reg;
+
+    // Check if the string represents "sp" or "pc"
+    if (regName == "sp" || regName == "r14") {
+        return 14;
+    }
+    if (regName == "pc" || regName == "r15") {
+        return 15;
+    }
+
+    // Check if the string represents "r0" to "r13"
+    if (regName.length() == 2 && regName[0] == 'r' && isdigit(regName[1])) {
+        int regNum = regName[1] - '0'; // Convert the second character to an integer
+        if (regNum >= 0 && regNum <= 9) {
+            return regNum;
+        }
+    }
+
+    // Check for "r10" to "r13"
+    if (regName.length() == 3 && regName[0] == 'r' && regName[1] == '1' && isdigit(regName[2])) {
+        int regNum = 10 + (regName[2] - '0'); // Convert the third character to an integer
+        if (regNum >= 10 && regNum <= 13) {
+            return regNum;
+        }
+    }
+
+    return -1; // If no valid register was found
+}
+
+int Assembler::isCSR(string csr) {
+    // Check for special CSR names
+    if (csr == "status" || csr == "crs0") {
+        return 0; // csr0
+    }
+    if (csr == "handler" || csr == "crs1") {
+        return 1; // csr1
+    }
+    if (csr == "cause" || csr == "crs2") {
+        return 2; // csr2
+    }
+    return -1;
 }
 
 void Assembler::compile(string inputFileName, string outputFileName){
