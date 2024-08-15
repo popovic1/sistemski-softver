@@ -237,7 +237,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 }
                 
-                entry->positionsInCode.push_back(currentLocation + 2);
+                entry->positionsInCode.push_back(currentLocation);
 
                 Section::appendCode("21F00000");
             }
@@ -252,7 +252,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
             }
 
-            entry->positionsInCode.push_back(currentLocation + 2);
+            entry->positionsInCode.push_back(currentLocation);
             symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("21F00000");
         }
@@ -299,7 +299,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 }
                 
-                entry->positionsInCode.push_back(currentLocation + 2);
+                entry->positionsInCode.push_back(currentLocation);
 
                 Section::appendCode("38F00000");
             }
@@ -314,7 +314,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
             }
 
-            entry->positionsInCode.push_back(currentLocation + 2);
+            entry->positionsInCode.push_back(currentLocation);
             symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("38F00000");
         }
@@ -361,7 +361,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 }
                 
-                entry->positionsInCode.push_back(currentLocation + 2);
+                entry->positionsInCode.push_back(currentLocation);
 
                 Section::appendCode("39F" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
             }
@@ -376,7 +376,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
             }
 
-            entry->positionsInCode.push_back(currentLocation + 2);
+            entry->positionsInCode.push_back(currentLocation);
             symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("39F" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
@@ -423,7 +423,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 }
                 
-                entry->positionsInCode.push_back(currentLocation + 2);
+                entry->positionsInCode.push_back(currentLocation);
 
                 Section::appendCode("3AF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
             }
@@ -438,7 +438,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
             }
 
-            entry->positionsInCode.push_back(currentLocation + 2);
+            entry->positionsInCode.push_back(currentLocation);
             symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("3AF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
@@ -485,7 +485,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 }
                 
-                entry->positionsInCode.push_back(currentLocation + 2);
+                entry->positionsInCode.push_back(currentLocation);
 
                 Section::appendCode("3BF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
             }
@@ -500,7 +500,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
             }
 
-            entry->positionsInCode.push_back(currentLocation + 2);
+            entry->positionsInCode.push_back(currentLocation);
             symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("3BF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
@@ -803,11 +803,392 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     }
     else if (parsedLine[0] == "ld")
     {
-        
+        int regNum = 0;
+        if(parsedLine.size() < 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }else if(parsedLine.size() == 3){
+
+            regNum = isRegister(parsedLine[2].substr(1));
+
+            if(parsedLine[2][0] != '%' || regNum == -1){
+                cout<<"--------------------------------------------------------------"<<endl;
+                cerr<<"Error: Last parameter is not a register or doesn't start with '%'."<<endl;
+                cout<<"--------------------------------------------------------------"<<endl;
+                return -1;
+            }
+
+            if(parsedLine[1][0]=='$'){ // vrednost literala ili simbola
+
+                int isLiteral = isNumber(parsedLine[1].substr(1));
+                if(isLiteral == 0){ // decimal
+                    // convert to hex
+                    parsedLine[1] = "$0x" + intToHexString(stoi(parsedLine[1].substr(1)));
+                    isLiteral = 1;
+                }
+
+                if(isLiteral == 1){ // hex
+                    string hex = parsedLine[1].substr(3);
+                    if(hex.length() <= 3){
+                        while (hex.length() < 3) {
+                            hex = "0" + hex;
+                        }
+                        string code = "91" + string(regNum, 1) + "00" + hex;
+                        Section::appendCode(code);
+
+                    }else{
+                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+
+                        if(entry == nullptr){
+                            entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                        }
+                        
+                        entry->positionsInCode.push_back(currentLocation);
+                        string code = "92" + string(1, hexDigits[regNum]) + "F0000";
+                        Section::appendCode(code);
+                    }
+
+                }else{ //symbol
+                    Symbol* symbol = Symbol::getSymbol(parsedLine[1].substr(1));
+                    if(symbol == nullptr){
+                        symbol = new Symbol(parsedLine[1].substr(1), 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                    }
+                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1].substr(1));
+                    if(entry == nullptr){
+                        entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1].substr(1));
+                    }
+
+                    entry->positionsInCode.push_back(currentLocation);
+                    symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+                    string code = "92" + string(1, hexDigits[regNum]) + "F0000";
+                    Section::appendCode(code);
+                }
+                        
+            }else if(parsedLine[1][0] == '%'){ // vrednost u registru
+
+                int regNum2 = isRegister(parsedLine[1].substr(1));
+                if(parsedLine[1][0] != '%' || regNum2 == -1){
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    cerr<<"Error: First parameter is not a register or doesn't start with '%'."<<endl;
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    return -1;
+                }
+
+                string code = "91" + string(1, hexDigits[regNum]) +  string(1, hexDigits[regNum2]) + "0000";
+                Section::appendCode(code);
+
+            }else if(parsedLine[1][0] == '['){ // vrednost u memoriji na mestu reg
+                
+                int regNum2 = isRegister(parsedLine[1].substr(2, parsedLine[1].length() - 3));
+
+                if(parsedLine[1][1] != '%' || parsedLine[1][parsedLine[1].length() -1] != ']' || regNum2 == -1){
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    cerr<<"Error: First parameter is not a register or isn't properly written."<<endl;
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    return -1;
+                }
+
+                string code = "92" + string(1, hexDigits[regNum]) +  string(1, hexDigits[regNum2]) + "0000";
+                Section::appendCode(code);
+
+            }else{ // vrednost u memoriji na mestu literal ili simbol
+
+                int isLiteral = isNumber(parsedLine[1]);
+                if(isLiteral == 0){ // decimal
+                    // convert to hex
+                    parsedLine[1] = "0x" + intToHexString(stoi(parsedLine[1]));
+                    isLiteral = 1;
+                }
+
+                if(isLiteral == 1){ // hex
+                    string hex = parsedLine[1].substr(2);
+                    if(hex.length() <= 3){
+                        while (hex.length() < 3) {
+                            hex = "0" + hex;
+                        }
+                        string code = "92" + string(regNum, 1) + "00" + hex;
+                        Section::appendCode(code);
+
+                    }else{
+                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+
+                        if(entry == nullptr){
+                            entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                        }
+                        
+                        entry->positionsInCode.push_back(currentLocation);
+                        string code = "92" + string(1, hexDigits[regNum]) + "F0000";
+                        Section::appendCode(code);
+                        currentLocation += 4;
+
+                        code = "92" + string(1, hexDigits[regNum]) + string(1, hexDigits[regNum]) + "0000";
+                        Section::appendCode(code);
+                    }
+
+                }else{ //symbol
+                    Symbol* symbol = Symbol::getSymbol(parsedLine[1]);
+                    if(symbol == nullptr){
+                        symbol = new Symbol(parsedLine[1], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                    }
+                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
+                    if(entry == nullptr){
+                        entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
+                    }
+
+                    entry->positionsInCode.push_back(currentLocation);
+                    symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+                    string code = "92" + string(1, hexDigits[regNum]) + "F0000";
+                    Section::appendCode(code);
+                    currentLocation += 4;
+
+                    code = "92" + string(1, hexDigits[regNum]) + string(1, hexDigits[regNum]) + "0000";
+                    Section::appendCode(code);
+                }
+            }
+
+        }else{ //izraz
+
+            regNum = isRegister(parsedLine[parsedLine.size()-1].substr(1));
+            cout<<"!!!!!!!!!!!   " + to_string(regNum) + "   !!!!!!!!"<<endl;
+
+            if(parsedLine[parsedLine.size()-1][0] != '%' || regNum == -1){
+                cout<<"--------------------------------------------------------------"<<endl;
+                cerr<<"Error: Last parameter is not a register or doesn't start with '%'."<<endl;
+                cout<<"--------------------------------------------------------------"<<endl;
+                return -1;
+            }
+
+            int regNum2 = isRegister(parsedLine[1].substr(2));
+
+            if(parsedLine[1][0] != '[' || parsedLine[1][1] != '%' || regNum2 == -1 || parsedLine[2] != "+" || 
+            parsedLine[3][parsedLine[3].length()-1] != ']')
+            {
+                cout<<"--------------------------------------------------------------"<<endl;
+                cerr<<"Error: Incorrect expression."<<endl;
+                cout<<"--------------------------------------------------------------"<<endl;
+                return -1;
+            }
+
+            int isLiteral = isNumber(parsedLine[3].substr(0, parsedLine[3].length() - 1));
+            if(isLiteral == 0){ // decimal
+                // convert to hex
+                parsedLine[3] = "0x" + intToHexString(stoi(parsedLine[3])) + "]";
+                isLiteral = 1;
+            }
+
+            if(isLiteral == 1){ // hex
+                string hex = parsedLine[3].substr(2, parsedLine[3].length() - 3);
+                if(hex.length() <= 3){
+                    while (hex.length() < 3) {
+                        hex = "0" + hex;
+                    }
+                    string code = "92" + string(1, hexDigits[regNum]) + string(1, hexDigits[regNum2]) + "0" + hex;
+                    Section::appendCode(code);
+
+                }else{
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    cerr<<"Error: Literal can't fit in 12 bits."<<endl;
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    return -1;
+                }
+            }else{ //symbol
+                Symbol* symbol = Symbol::getSymbol(parsedLine[3].substr(0, parsedLine[3].length() - 1));
+                if(symbol != nullptr and symbol->isDefined()){
+                    int value = symbol->getValue();
+                    string hex = intToHexString(value);
+
+                    if(hex.length() <= 3){
+                        while (hex.length() < 3) {
+                            hex = "0" + hex;
+                        }
+                        string code = "92" + string(1, hexDigits[regNum]) + string(1, hexDigits[regNum2]) + "0" + hex;
+                        Section::appendCode(code);
+
+                    }else{
+                        cout<<"--------------------------------------------------------------"<<endl;
+                        cerr<<"Error: Symbol value can't fit in 12 bits."<<endl;
+                        cout<<"--------------------------------------------------------------"<<endl;
+                        return -1;
+                    }                    
+
+                }else{
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    cerr<<"Error: Symbol doesn't exist or isn't defined."<<endl;
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    return -1;
+                }
+            }
+
+
+        }
     }
     else if (parsedLine[0] == "st")
     {
-        
+        int regNum = 0;
+        if(parsedLine.size() < 3){
+            cout<<"--------------------------------------------------------------"<<endl;
+            cerr<<"Error: Incorrect syntax."<<endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            return -1;
+        }else if(parsedLine.size() == 3){
+
+            regNum = isRegister(parsedLine[1].substr(1));
+
+            if(parsedLine[1][0] != '%' || regNum == -1){
+                cout<<"--------------------------------------------------------------"<<endl;
+                cerr<<"Error: First parameter is not a register or doesn't start with '%'."<<endl;
+                cout<<"--------------------------------------------------------------"<<endl;
+                return -1;
+            }
+
+            if(parsedLine[2][0]=='$'){ // vrednost literala ili simbola
+
+                cout<<"--------------------------------------------------------------"<<endl;
+                cerr<<"Error: Can't store to an immidate value."<<endl;
+                cout<<"--------------------------------------------------------------"<<endl;
+                return -1;
+                        
+            }else if(parsedLine[2][0] == '%'){ // vrednost u registru
+
+                cout<<"--------------------------------------------------------------"<<endl;
+                cerr<<"Error: Can't store into a register."<<endl;
+                cout<<"--------------------------------------------------------------"<<endl;
+                return -1;
+
+            }else if(parsedLine[2][0] == '['){ // vrednost u memoriji na mestu reg
+                
+                int regNum2 = isRegister(parsedLine[2].substr(2, parsedLine[2].length() - 3));
+
+                if(parsedLine[2][1] != '%' || parsedLine[2][parsedLine[2].length() -1] != ']' || regNum2 == -1){
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    cerr<<"Error: First parameter is not a register or isn't properly written."<<endl;
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    return -1;
+                }
+
+                string code = "80" + string(1, hexDigits[regNum2]) + "0" +  string(1, hexDigits[regNum2]) + "000";
+                Section::appendCode(code);
+
+            }else{ // vrednost u memoriji na mestu literal ili simbol
+                int isLiteral = isNumber(parsedLine[2]);
+                if(isLiteral == 0){ // decimal
+                    // convert to hex
+                    parsedLine[2] = "0x" + intToHexString(stoi(parsedLine[2]));
+                    isLiteral = 1;
+                }
+
+                if(isLiteral == 1){ // hex
+                    string hex = parsedLine[2].substr(2);
+                    if(hex.length() <= 3){
+                        while (hex.length() < 3) {
+                            hex = "0" + hex;
+                        }
+                        string code = "8000" + string(regNum, 1) + hex;
+                        Section::appendCode(code);
+
+                    }else{
+                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+
+                        if(entry == nullptr){
+                            entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                        }
+                        
+                        entry->positionsInCode.push_back(currentLocation);
+                        string code = "82F0" + string(1, hexDigits[regNum]) + "000";
+                        Section::appendCode(code);
+                    }
+
+                }else{ //symbol
+                    Symbol* symbol = Symbol::getSymbol(parsedLine[2]);
+                    if(symbol == nullptr){
+                        symbol = new Symbol(parsedLine[2], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                    }
+                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[2]);
+                    if(entry == nullptr){
+                        entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[2]);
+                    }
+
+                    entry->positionsInCode.push_back(currentLocation);
+                    symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+                    string code = "82F0" + string(1, hexDigits[regNum]) + "000";
+                    Section::appendCode(code);
+                }
+            }
+
+        }else{ //izraz
+
+            regNum = isRegister(parsedLine[1].substr(1));
+
+            if(parsedLine[1][0] != '%' || regNum == -1){
+                cout<<"--------------------------------------------------------------"<<endl;
+                cerr<<"Error: First parameter is not a register or doesn't start with '%'."<<endl;
+                cout<<"--------------------------------------------------------------"<<endl;
+                return -1;
+            }
+
+            int regNum2 = isRegister(parsedLine[2].substr(2));
+
+            if(parsedLine[2][0] != '[' || parsedLine[2][1] != '%' || regNum2 == -1 || parsedLine[3] != "+" || 
+            parsedLine[4][parsedLine[4].length()-1] != ']')
+            {
+                cout<<"--------------------------------------------------------------"<<endl;
+                cerr<<"Error: Incorrect expression."<<endl;
+                cout<<"--------------------------------------------------------------"<<endl;
+                return -1;
+            }
+
+            int isLiteral = isNumber(parsedLine[4].substr(0, parsedLine[4].length() - 1));
+            if(isLiteral == 0){ // decimal
+                // convert to hex
+                parsedLine[4] = "0x" + intToHexString(stoi(parsedLine[4])) + "]";
+                isLiteral = 1;
+            }
+
+            if(isLiteral == 1){ // hex
+                string hex = parsedLine[4].substr(2, parsedLine[4].length() - 3);
+                if(hex.length() <= 3){
+                    while (hex.length() < 3) {
+                        hex = "0" + hex;
+                    }
+                    string code = "80" + string(1, hexDigits[regNum2]) + "0" + string(1, hexDigits[regNum]) + hex;
+                    Section::appendCode(code);
+
+                }else{
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    cerr<<"Error: Literal can't fit in 12 bits."<<endl;
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    return -1;
+                }
+            }else{ //symbol
+                Symbol* symbol = Symbol::getSymbol(parsedLine[4].substr(0, parsedLine[4].length() - 1));
+                if(symbol != nullptr and symbol->isDefined()){
+                    int value = symbol->getValue();
+                    string hex = intToHexString(value);
+
+                    if(hex.length() <= 3){
+                        while (hex.length() < 3) {
+                            hex = "0" + hex;
+                        }
+                        string code = "80" + string(1, hexDigits[regNum2]) + "0" + string(1, hexDigits[regNum]) + hex;
+                        Section::appendCode(code);
+
+                    }else{
+                        cout<<"--------------------------------------------------------------"<<endl;
+                        cerr<<"Error: Symbol value can't fit in 12 bits."<<endl;
+                        cout<<"--------------------------------------------------------------"<<endl;
+                        return -1;
+                    }                    
+
+                }else{
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    cerr<<"Error: Symbol doesn't exist or isn't defined."<<endl;
+                    cout<<"--------------------------------------------------------------"<<endl;
+                    return -1;
+                }
+            }
+        }
     }
     else if (parsedLine[0] == "csrrd")
     {

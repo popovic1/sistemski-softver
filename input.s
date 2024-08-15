@@ -13,7 +13,7 @@ beq %r1, %r2, my_isr_terminal
 .skip 2
 # obrada prekida od tajmera
 my_isr_timer:
-ld $ascii_code , %r1
+ld $ascii_code, %r1
 st %r1, term_out
 .word my_isr_timer, 0xFFFF, 10
 jmp finish
