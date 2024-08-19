@@ -32,7 +32,7 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }else{
-                bool success = addSymbolToTheSymbolList(parsedLine[i], 0, Scope::GLOBAL, true, Section::getUndefinedSection());
+                bool success = addSymbolToTheSymbolList(parsedLine[i], 0, Scope::EXTERN, true, Section::getUndefinedSection());
                 if(success == false)
                     return -1;
             }
@@ -56,8 +56,8 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
 
         if(Section::getActiveSection()!= nullptr){
             //ovo mozda ne treba ako uvecavam size posle svake instrukcije
-            Section::getActiveSection()->setSize(currentLocation);
-            cout<<Section::getActiveSection()->getCode()<<endl;
+            Section::getActiveSection()->finalize();
+            Section::getActiveSection()->printCode();
         }
 
         currentLocation = 0;
@@ -78,14 +78,18 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
             int valueOfWord = 0;
 
             if(typeOfParam == -1){ //symbol
+                // TODO resolve when symbol is not yet defined
                 Symbol* symbol = Symbol::getSymbol(parsedLine[i]);
-                if(symbol == nullptr){
-                    cout<<"--------------------------------------------------------------"<<endl;
-                    cerr<<"Error: Invalid parameter:" + parsedLine[i]<<endl;
-                    cout<<"--------------------------------------------------------------"<<endl;
-                    return -1;
+                if(symbol == nullptr || !symbol->isDefined()){
+                    if(symbol == nullptr){
+                        symbol = new Symbol(parsedLine[1], 0, Scope::LOCAL, false, Section::getUndefinedSection());
+                    }
+                    symbol->addFLinkEntry(currentLocation, true, Section::getActiveSection(), true);
+                    valueOfWord = 0;
+                }else{
+                    valueOfWord = symbol->getValue();
                 }
-                valueOfWord = symbol->getValue();
+                
             }else if(typeOfParam == 0){ //decimal
                 valueOfWord = stoi(parsedLine[i]);
             }else if(typeOfParam == 1){ //hex
@@ -151,9 +155,10 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
     {
         if(Section::getActiveSection()!= nullptr){
             //ovo mozda ne treba ako uvecavam size posle svake instrukcije
-            Section::getActiveSection()->setSize(currentLocation);
+            Section::getActiveSection()->finalize();
+            Section::getActiveSection()->printCode();
         }
-        cout<<Section::getActiveSection()->getCode()<<endl;
+        
         return 1;
     }
     else
@@ -253,7 +258,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
             }
 
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("21F00000");
         }
     }
@@ -315,7 +320,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
             }
 
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("38F00000");
         }
     }
@@ -377,7 +382,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
             }
 
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("39F" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
     }
@@ -439,7 +444,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
             }
 
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("3AF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
     }
@@ -501,7 +506,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
             }
 
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
             Section::appendCode("3BF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
     }
@@ -835,7 +840,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         while (hex.length() < 3) {
                             hex = "0" + hex;
                         }
-                        string code = "91" + string(regNum, 1) + "00" + hex;
+                        string code = "91" + string(1, hexDigits[regNum]) + "00" + hex;
                         Section::appendCode(code);
 
                     }else{
@@ -861,7 +866,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     }
 
                     entry->positionsInCode.push_back(currentLocation);
-                    symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+                    symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
                     string code = "92" + string(1, hexDigits[regNum]) + "F0000";
                     Section::appendCode(code);
                 }
@@ -938,7 +943,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     }
 
                     entry->positionsInCode.push_back(currentLocation);
-                    symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+                    symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
                     string code = "92" + string(1, hexDigits[regNum]) + "F0000";
                     Section::appendCode(code);
                     currentLocation += 4;
@@ -994,6 +999,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     return -1;
                 }
             }else{ //symbol
+
                 Symbol* symbol = Symbol::getSymbol(parsedLine[3].substr(0, parsedLine[3].length() - 1));
                 if(symbol != nullptr and symbol->isDefined()){
                     int value = symbol->getValue();
@@ -1003,6 +1009,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         while (hex.length() < 3) {
                             hex = "0" + hex;
                         }
+                        symbol->addFLinkEntry(currentLocation, false, Section::getActiveSection());
                         string code = "92" + string(1, hexDigits[regNum]) + string(1, hexDigits[regNum2]) + "0" + hex;
                         Section::appendCode(code);
 
@@ -1111,7 +1118,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     }
 
                     entry->positionsInCode.push_back(currentLocation);
-                    symbol->addTNSEntry(entry->location, true, Section::getActiveSection());
+                    symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
                     string code = "82F0" + string(1, hexDigits[regNum]) + "000";
                     Section::appendCode(code);
                 }
@@ -1171,6 +1178,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         while (hex.length() < 3) {
                             hex = "0" + hex;
                         }
+                        symbol->addFLinkEntry(currentLocation, false, Section::getActiveSection());
                         string code = "80" + string(1, hexDigits[regNum2]) + "0" + string(1, hexDigits[regNum]) + hex;
                         Section::appendCode(code);
 
@@ -1475,6 +1483,10 @@ void Assembler::compile(string inputFileName, string outputFileName){
         }
 
     }
+
+    // Section::determineSectionSizesWithLiteralPools();
+
+    Symbol::resolveSymbolValuesAndFLinks();
 
     Section::printSectionList();
     Symbol::printSymbolList();

@@ -1,3 +1,4 @@
-- Kako ce skip i word direktive da se detektuju od strane linkera? Kako da ih ne izvrsava kao instrukcije?
-- TODO add support for section size calculation
 - Pazi kad popunjavas literal pool sekcije da ne ubacis stringove imena simbola koje si dodavao radi trazenja simbola u bazenu
+- Implementiraj razlikovanje extern i global simbola u asembleru
+- Kako se poremete stvari kada se uradi .skip za broj bajtova koji nije umnozak 4? Da li to pravi problem linkeru pri dohvatanju 4 po 4 bajta?
+- Kad menjati u little endian? Vrv pred ubacivanja u fajl

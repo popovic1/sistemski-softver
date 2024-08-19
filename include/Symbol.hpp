@@ -8,13 +8,14 @@
 using namespace std;
 
 enum Scope{
-    LOCAL, GLOBAL
+    LOCAL, GLOBAL, EXTERN
 };
 
-struct TNSEntry{
+struct FLinkEntry{
     int location;
-    bool literalPool;
+    bool fourBytes;
     Section* section;
+    bool word;
 };
 
 class Symbol{
@@ -24,7 +25,7 @@ private:
     Section* section;
     Scope scope;
     bool defined;
-    vector<TNSEntry*> tns;
+    vector<FLinkEntry*> flinks;
 
     static vector<Symbol*> symbolList;
 
@@ -34,6 +35,8 @@ public:
     ~Symbol();
 
     static Symbol* getSymbol(string name);
+
+    static int updateFLinkLocationsInLiteralPool(Section* section); 
 
     static void printSymbolList();
 
@@ -69,10 +72,20 @@ public:
         this->scope = scope;
     }
 
-    void addTNSEntry(int location, bool isLiteralPool, Section* section){
-        TNSEntry* entry = new TNSEntry{location, isLiteralPool, section};
-        tns.push_back(entry);
+    void addFLinkEntry(int location, bool isLiteralPool, Section* section, bool word = false){
+        FLinkEntry* entry = new FLinkEntry{location, isLiteralPool, section, word};
+        flinks.push_back(entry);
     }
+
+    static int resolveSymbolValuesAndFLinks();
+
+    static string intToHexString(int num) {
+        stringstream ss;
+        ss << std::hex << num; // Convert integer to hexadecimal
+        return ss.str();       // Return the hexadecimal string
+    }
+
+    
 
 };
 

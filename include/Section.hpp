@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <iostream>
+#include <sstream>
 #include "LiteralPool.hpp"
-
 using namespace std;
 
 class Section{
@@ -24,6 +24,8 @@ private:
 
 public:
     Section(std::string name);
+
+    int finalize();
     
     static Section* getActiveSection(){
         return activeSection;
@@ -39,6 +41,8 @@ public:
     static void setActiveSection(Section *section){
         activeSection = section;
     }
+
+    static void determineSectionSizesWithLiteralPools();
 
     int getId(){
         return id;
@@ -74,13 +78,29 @@ public:
 
     static void appendCode(string code){
         activeSection->code.append(code);
+        activeSection->size += 4;
     }
 
     static std::vector<Section*> getSectionList(){
         return sectionList;
     }
 
+    static Section* getSection(int id){
+        for(Section* section: sectionList){
+            if(section->getId() == id){
+                return section;
+            }
+        }
+        return nullptr;
+    }
+
+    void printCode();
+
     static void printSectionList();
+
+    string intToHexString(int num);
+
+    void modifyCode(int startPosition, int length, string modifiedCode);
 
     ~Section();
 };
