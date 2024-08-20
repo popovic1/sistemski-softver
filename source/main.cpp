@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
-#include "../include/Parser.hpp"
 #include "../include/Assembler.hpp"
 
 using namespace std;

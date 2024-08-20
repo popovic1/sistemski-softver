@@ -1,21 +1,12 @@
+#ifndef ASSEMBLER_HPP_
+#define ASSEMBLER_HPP_
+
 #include "Parser.hpp"
 #include "Section.hpp"
 #include "Symbol.hpp"
 #include <string>
 
 using namespace std;
-
-#ifndef ASSEMBLER_HPP_
-#define ASSEMBLER_HPP_
-
-enum Operations {
-    HALT, INT, IRET, CALL, RET, JMP, BEQ, BNE, BGT, PUSH, POP, XCHG, ADD, SUB,
-    MUL, DIV, NOT, AND, OR, XOR, SHL, SHR, LD, ST, CSRRD, CSRWR, ERR_INS
-};
-
-// enum Directives {
-//     GLOBAL, EXTERN, SECTION, WORD, SKIP, END, ERROR
-// };
 
 class Assembler{
 private:
@@ -29,7 +20,7 @@ public:
     int handleDirectives(std::vector<string> parsedLine);
     int handleInstructions(std::vector<string> parsedLine);
 
-    bool addSymbolToTheSymbolList(string symbol, int value, Scope scope, bool defined, Section* section);
+    bool addSymbolToTheSymbolList(string symbol, int value, Scope scope, bool defined, Section* section, SymbolType type);
 
     bool isValidIdentifier(const std::string& name);
 
@@ -41,6 +32,8 @@ public:
 
     int isRegister(const std::string& reg);
     int isCSR(string csr);
+
+    void writeToFile(string inputFileName, string outputFileName);
 
     ~Assembler();
 };

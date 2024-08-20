@@ -4,8 +4,14 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include "LiteralPool.hpp"
+
+
+
 using namespace std;
+
+class ReallocationTable;
+class LiteralPool;
+class Symbol;
 
 class Section{
 private:
@@ -18,7 +24,8 @@ private:
     std::string name;
     int size = 0;
     std::string code = "";
-    LiteralPool* literalPool = new LiteralPool();
+    LiteralPool* literalPool;;
+    ReallocationTable* reallocationTable;;
 
     Section(string name, int number);
 
@@ -76,10 +83,16 @@ public:
         return literalPool;
     }
 
+    ReallocationTable* getReallocationTable(){
+        return reallocationTable;
+    }
+
     static void appendCode(string code){
         activeSection->code.append(code);
         activeSection->size += 4;
     }
+
+    void addLiteralPoolToCode();
 
     static std::vector<Section*> getSectionList(){
         return sectionList;
@@ -99,6 +112,7 @@ public:
     static void printSectionList();
 
     string intToHexString(int num);
+    int isNumber(std::string arg);
 
     void modifyCode(int startPosition, int length, string modifiedCode);
 

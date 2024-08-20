@@ -24,8 +24,9 @@ public:
 
     int findEntry(string value);
     LiteralPoolEntry* getEntry(string value);
+    LiteralPoolEntry* getEntryByLocation(int location);
     LiteralPoolEntry* insertEntry(string value);
-    
+
     std::vector<LiteralPoolEntry*> getAllEntries(){
         return entries;
     }

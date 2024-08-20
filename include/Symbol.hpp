@@ -2,26 +2,39 @@
 #define SYMBOL_HPP_
 
 #include <string>
-#include "Section.hpp"
 #include <iostream>
+#include <sstream>
+#include <vector>
 
 using namespace std;
+
+class Section;
 
 enum Scope{
     LOCAL, GLOBAL, EXTERN
 };
 
+enum FlinkType{
+    LITERAL_POOL, TWELVE_BIT_VALUE, THIRTY_TWO_BIT_VALUE
+};
+
+enum SymbolType{
+    NOTYP, SCTN
+};
+
 struct FLinkEntry{
     int location;
-    bool fourBytes;
     Section* section;
-    bool word;
+    FlinkType type;
 };
 
 class Symbol{
 private:
+    static int symbolID;
+    int id;
     string name;
     int value;
+    SymbolType type;
     Section* section;
     Scope scope;
     bool defined;
@@ -30,7 +43,7 @@ private:
     static vector<Symbol*> symbolList;
 
 public:
-    Symbol(string name, int value, Scope scope, bool defined, Section* section);
+    Symbol(string name, int value, Scope scope, bool defined, Section* section, SymbolType type);
 
     ~Symbol();
 
@@ -46,6 +59,10 @@ public:
 
     int getValue(){
         return value;
+    }
+
+    int getID(){
+        return id;
     }
 
     void setValue(int value){
@@ -72,8 +89,38 @@ public:
         this->scope = scope;
     }
 
-    void addFLinkEntry(int location, bool isLiteralPool, Section* section, bool word = false){
-        FLinkEntry* entry = new FLinkEntry{location, isLiteralPool, section, word};
+    Scope getScope(){
+        return scope;
+    }
+
+    string getScopeString(){
+        if(scope == Scope::GLOBAL){
+            return "GLOB";
+        }else if(scope == Scope::LOCAL){
+            return "LOC";
+        }
+        return "";
+    }
+
+    SymbolType getType(){
+        return type;
+    }
+
+    string getTypeString(){
+        if(type == SymbolType::NOTYP){
+            return "NOTYP";
+        }else if(type == SymbolType::SCTN){
+            return "SCTN";
+        }
+        return "";
+    }
+
+    static vector<Symbol*> getAllSymbols(){
+        return symbolList;
+    }
+
+    void addFLinkEntry(int location, Section* section, FlinkType type){
+        FLinkEntry* entry = new FLinkEntry{location, section, type};
         flinks.push_back(entry);
     }
 

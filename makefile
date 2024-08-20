@@ -44,3 +44,11 @@ clean:
 
 # Phony targets
 .PHONY: all clean
+
+assemble:
+	./bin/main -o o/main.o tests/main.s
+	./bin/main -o o/math.o tests/math.s
+	./bin/main -o o/handler.o tests/handler.s
+	./bin/main -o o/isr_software.o tests/isr_software.s
+	./bin/main -o o/isr_terminal.o tests/isr_terminal.s
+	./bin/main -o o/isr_timer.o tests/isr_timer.s

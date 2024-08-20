@@ -26,3 +26,12 @@ LiteralPoolEntry* LiteralPool::getEntry(string value){
     }
     return nullptr;
 }
+
+LiteralPoolEntry* LiteralPool::getEntryByLocation(int location){
+    for (LiteralPoolEntry* entry : entries) {
+        if (entry->location == location) {
+            return entry;
+        }
+    }
+    return nullptr;
+}

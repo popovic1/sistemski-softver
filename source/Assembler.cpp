@@ -1,4 +1,10 @@
 #include "../include/Assembler.hpp"
+#include "../include/LiteralPool.hpp"
+#include "../include/ReallocationTable.hpp"
+
+#include <iostream>
+#include <fstream>
+
 
 
 Assembler::Assembler(){}
@@ -13,7 +19,7 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
             if(existingSymbol != nullptr){
                 existingSymbol->setScope(Scope::GLOBAL);
             }else{
-                bool success = addSymbolToTheSymbolList(parsedLine[i], 0, Scope::GLOBAL, false, Section::getUndefinedSection());
+                bool success = addSymbolToTheSymbolList(parsedLine[i], 0, Scope::GLOBAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
                 if(success == false)
                     return -1;
             }
@@ -25,14 +31,12 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
             Symbol* existingSymbol = Symbol::getSymbol(parsedLine[i]);
 
             if(existingSymbol != nullptr){
-                // TODO ne bi trebalo da bacam gresku ovde, trebalo bi da mogu da se naprave i extern i lokalni simbol sa istim imenom,
-                // ali da li postoji u testovima
                 cout<<"--------------------------------------------------------------"<<endl;
                 cerr<<"Error: Symbol already defined" + parsedLine[i]<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }else{
-                bool success = addSymbolToTheSymbolList(parsedLine[i], 0, Scope::EXTERN, true, Section::getUndefinedSection());
+                bool success = addSymbolToTheSymbolList(parsedLine[i], 0, Scope::EXTERN, true, Section::getUndefinedSection(), SymbolType::NOTYP);
                 if(success == false)
                     return -1;
             }
@@ -72,6 +76,13 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
+
+        if(Section::getActiveSection() == nullptr){
+            cout<<"------------------------------------------"<<endl;
+            std::cerr<<"Error: Word directive needs to be in a section."<<endl;
+            cout<<"------------------------------------------"<<endl;
+            return -1;
+        }
         
         for(int i = 1; i < parsedLine.size(); i++){
             int typeOfParam = isNumber(parsedLine[i]);
@@ -82,13 +93,27 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
                 Symbol* symbol = Symbol::getSymbol(parsedLine[i]);
                 if(symbol == nullptr || !symbol->isDefined()){
                     if(symbol == nullptr){
-                        symbol = new Symbol(parsedLine[1], 0, Scope::LOCAL, false, Section::getUndefinedSection());
+                        bool success = addSymbolToTheSymbolList(parsedLine[1], 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                        if(success == false){
+                            return -1;
+                        }
+                        symbol = Symbol::getSymbol(parsedLine[1]);
                     }
-                    symbol->addFLinkEntry(currentLocation, true, Section::getActiveSection(), true);
+                    symbol->addFLinkEntry(currentLocation, Section::getActiveSection(), FlinkType::THIRTY_TWO_BIT_VALUE);
                     valueOfWord = 0;
                 }else{
                     valueOfWord = symbol->getValue();
                 }
+
+                if(symbol->getScope() == Scope::LOCAL){
+                    Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, 
+                        Symbol::getSymbol(symbol->getSection()->getName()), ReallocationType::LOCAL_SYM_REALLOC_THIRTY_TWO_BIT);
+                }else if(symbol->getScope() == Scope::EXTERN){
+                    Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, symbol, ReallocationType::EXT_SYM_REALLOC);
+                }else if(symbol->getScope() == Scope::GLOBAL){
+                    Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, symbol, ReallocationType::GLOB_SYM_REALLOC);
+                }
+                
                 
             }else if(typeOfParam == 0){ //decimal
                 valueOfWord = stoi(parsedLine[i]);
@@ -107,7 +132,10 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
-            string code = decimalToLittleEndianHexString(valueOfWord);
+            string code = intToHexString(valueOfWord);
+            while(code.length()<8){
+                code = "0" + code;
+            }
             Section::appendCode(code);
             currentLocation += 4;
         }
@@ -250,15 +278,21 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
         }else{ //symbol
             Symbol* symbol = Symbol::getSymbol(parsedLine[1]);
             if(symbol == nullptr){
-                symbol = new Symbol(parsedLine[1], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                bool success = addSymbolToTheSymbolList(parsedLine[1], 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                if(!success) return -1;
+                symbol = Symbol::getSymbol(parsedLine[1]);
             }
+
             LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
             if(entry == nullptr){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
             }
-
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
+
+            // this will later add a reallocation for the location in the literal pool
+            symbol->addFLinkEntry(entry->location, Section::getActiveSection(), FlinkType::LITERAL_POOL);
+
+
             Section::appendCode("21F00000");
         }
     }
@@ -312,15 +346,20 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
         }else{ //symbol
             Symbol* symbol = Symbol::getSymbol(parsedLine[1]);
             if(symbol == nullptr){
-                symbol = new Symbol(parsedLine[1], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                bool success = addSymbolToTheSymbolList(parsedLine[1], 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                if(!success) return -1;
+                symbol = Symbol::getSymbol(parsedLine[1]);
             }
+
             LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
             if(entry == nullptr){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
             }
-
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
+
+            // this will later add a reallocation for the location in the literal pool
+            symbol->addFLinkEntry(entry->location, Section::getActiveSection(), FlinkType::LITERAL_POOL);
+
             Section::appendCode("38F00000");
         }
     }
@@ -374,15 +413,20 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
         }else{ //symbol
             Symbol* symbol = Symbol::getSymbol(parsedLine[3]);
             if(symbol == nullptr){
-                symbol = new Symbol(parsedLine[3], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                bool success = addSymbolToTheSymbolList(parsedLine[3], 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                if(!success) return -1;
+                symbol = Symbol::getSymbol(parsedLine[3]);
             }
+
             LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
             if(entry == nullptr){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
             }
-
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
+
+            // this will later add a reallocation for the location in the literal pool
+            symbol->addFLinkEntry(entry->location, Section::getActiveSection(), FlinkType::LITERAL_POOL);
+
             Section::appendCode("39F" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
     }
@@ -436,15 +480,19 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
         }else{ //symbol
             Symbol* symbol = Symbol::getSymbol(parsedLine[3]);
             if(symbol == nullptr){
-                symbol = new Symbol(parsedLine[3], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                bool success = addSymbolToTheSymbolList(parsedLine[3], 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                if(!success) return -1;
+                symbol = Symbol::getSymbol(parsedLine[3]);
             }
+
             LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
             if(entry == nullptr){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
             }
-
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
+
+            // this will later add a reallocation for the location in the literal pool
+            symbol->addFLinkEntry(entry->location, Section::getActiveSection(), FlinkType::LITERAL_POOL);
             Section::appendCode("3AF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
     }
@@ -498,15 +546,19 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
         }else{ //symbol
             Symbol* symbol = Symbol::getSymbol(parsedLine[3]);
             if(symbol == nullptr){
-                symbol = new Symbol(parsedLine[3], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                bool success = addSymbolToTheSymbolList(parsedLine[3], 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                if(!success) return -1;
+                symbol = Symbol::getSymbol(parsedLine[3]);
             }
+
             LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
             if(entry == nullptr){
                 entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
             }
-
             entry->positionsInCode.push_back(currentLocation);
-            symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
+
+            // this will later add a reallocation for the location in the literal pool
+            symbol->addFLinkEntry(entry->location, Section::getActiveSection(), FlinkType::LITERAL_POOL);
             Section::appendCode("3BF" + string(1, hexDigits[regNum1]) + string(1, hexDigits[regNum2]) + "000");
         }
     }
@@ -858,7 +910,9 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 }else{ //symbol
                     Symbol* symbol = Symbol::getSymbol(parsedLine[1].substr(1));
                     if(symbol == nullptr){
-                        symbol = new Symbol(parsedLine[1].substr(1), 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                        bool success = addSymbolToTheSymbolList(parsedLine[1].substr(1), 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                        if(!success) return -1;
+                        symbol = Symbol::getSymbol(parsedLine[1].substr(1));                    
                     }
                     LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1].substr(1));
                     if(entry == nullptr){
@@ -866,7 +920,10 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     }
 
                     entry->positionsInCode.push_back(currentLocation);
-                    symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
+
+                    // this will later add a reallocation for the location in the literal pool
+                    symbol->addFLinkEntry(entry->location, Section::getActiveSection(), FlinkType::LITERAL_POOL);
+
                     string code = "92" + string(1, hexDigits[regNum]) + "F0000";
                     Section::appendCode(code);
                 }
@@ -899,7 +956,6 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 Section::appendCode(code);
 
             }else{ // vrednost u memoriji na mestu literal ili simbol
-
                 int isLiteral = isNumber(parsedLine[1]);
                 if(isLiteral == 0){ // decimal
                     // convert to hex
@@ -935,15 +991,20 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 }else{ //symbol
                     Symbol* symbol = Symbol::getSymbol(parsedLine[1]);
                     if(symbol == nullptr){
-                        symbol = new Symbol(parsedLine[1], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                        bool success = addSymbolToTheSymbolList(parsedLine[1], 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                        if(!success) return -1;
+                        symbol = Symbol::getSymbol(parsedLine[1]);
                     }
+
                     LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
                     if(entry == nullptr){
                         entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
                     }
-
                     entry->positionsInCode.push_back(currentLocation);
-                    symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
+
+                    // this will later add a reallocation for the location in the literal pool
+                    symbol->addFLinkEntry(entry->location, Section::getActiveSection(), FlinkType::LITERAL_POOL);
+
                     string code = "92" + string(1, hexDigits[regNum]) + "F0000";
                     Section::appendCode(code);
                     currentLocation += 4;
@@ -956,7 +1017,6 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
         }else{ //izraz
 
             regNum = isRegister(parsedLine[parsedLine.size()-1].substr(1));
-            cout<<"!!!!!!!!!!!   " + to_string(regNum) + "   !!!!!!!!"<<endl;
 
             if(parsedLine[parsedLine.size()-1][0] != '%' || regNum == -1){
                 cout<<"--------------------------------------------------------------"<<endl;
@@ -1009,7 +1069,17 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         while (hex.length() < 3) {
                             hex = "0" + hex;
                         }
-                        symbol->addFLinkEntry(currentLocation, false, Section::getActiveSection());
+                        
+                        // TODO proveri da li ovu vrednost treba realocirati
+                        if(symbol->getScope() == Scope::LOCAL){
+                            Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, 
+                                Symbol::getSymbol(symbol->getSection()->getName()), ReallocationType::LOCAL_SYM_REALLOC_TWELVE_BIT);
+                        }else if(symbol->getScope() == Scope::EXTERN){
+                            Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, symbol, ReallocationType::EXT_SYM_REALLOC_TWELVE_BIT);
+                        }else if(symbol->getScope() == Scope::GLOBAL){
+                            Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, symbol, ReallocationType::GLOB_SYM_REALLOC_TWELVE_BIT);
+                        }
+
                         string code = "92" + string(1, hexDigits[regNum]) + string(1, hexDigits[regNum2]) + "0" + hex;
                         Section::appendCode(code);
 
@@ -1110,15 +1180,19 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 }else{ //symbol
                     Symbol* symbol = Symbol::getSymbol(parsedLine[2]);
                     if(symbol == nullptr){
-                        symbol = new Symbol(parsedLine[2], 0, Scope::LOCAL, 0, Section::getUndefinedSection());
+                        bool success = addSymbolToTheSymbolList(parsedLine[2], 0, Scope::LOCAL, false, Section::getUndefinedSection(), SymbolType::NOTYP);
+                        if(!success) return -1;
+                        symbol = Symbol::getSymbol(parsedLine[1]);
                     }
+
                     LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[2]);
                     if(entry == nullptr){
                         entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[2]);
                     }
-
                     entry->positionsInCode.push_back(currentLocation);
-                    symbol->addFLinkEntry(entry->location, true, Section::getActiveSection());
+
+                    // this will later add a reallocation for the location in the literal pool
+                    symbol->addFLinkEntry(entry->location, Section::getActiveSection(), FlinkType::LITERAL_POOL);
                     string code = "82F0" + string(1, hexDigits[regNum]) + "000";
                     Section::appendCode(code);
                 }
@@ -1178,7 +1252,17 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         while (hex.length() < 3) {
                             hex = "0" + hex;
                         }
-                        symbol->addFLinkEntry(currentLocation, false, Section::getActiveSection());
+
+                        // TODO proveri da li ovu vrednost treba realocirati
+                        if(symbol->getScope() == Scope::LOCAL){
+                            Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, 
+                                Symbol::getSymbol(symbol->getSection()->getName()), ReallocationType::LOCAL_SYM_REALLOC_TWELVE_BIT);
+                        }else if(symbol->getScope() == Scope::EXTERN){
+                            Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, symbol, ReallocationType::EXT_SYM_REALLOC_TWELVE_BIT);
+                        }else if(symbol->getScope() == Scope::GLOBAL){
+                            Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, symbol, ReallocationType::GLOB_SYM_REALLOC_TWELVE_BIT);
+                        }                        
+
                         string code = "80" + string(1, hexDigits[regNum2]) + "0" + string(1, hexDigits[regNum]) + hex;
                         Section::appendCode(code);
 
@@ -1254,7 +1338,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     return 0;
 }
 
-bool Assembler::addSymbolToTheSymbolList(string name, int value, Scope scope, bool defined, Section* section){
+bool Assembler::addSymbolToTheSymbolList(string name, int value, Scope scope, bool defined, Section* section, SymbolType type){
     // check if the symbol can be added and is valid (i.e. can't be 343ff55)
     if(isValidIdentifier(name) == false){
         cout<<"-----------------------------------------"<<endl;
@@ -1267,7 +1351,7 @@ bool Assembler::addSymbolToTheSymbolList(string name, int value, Scope scope, bo
     // check if the symbol already exists
     Symbol* existingSymbol = Symbol::getSymbol(name);
     if(existingSymbol == nullptr){
-        Symbol* newSymbol = new Symbol(name, value, scope, defined, section);
+        Symbol* newSymbol = new Symbol(name, value, scope, defined, section, type);
         return true;
 
     }else{
@@ -1282,7 +1366,7 @@ bool Assembler::addSymbolToTheSymbolList(string name, int value, Scope scope, bo
         {
             existingSymbol->setValue(value);
             existingSymbol->setDefined(true);
-            existingSymbol->setSection(section); // TODO da li ovo treba??? - Mora
+            existingSymbol->setSection(section);
             return true;
         }
     }
@@ -1427,6 +1511,53 @@ int Assembler::isCSR(string csr) {
     return -1;
 }
 
+void Assembler::writeToFile(string inputFileName, string outputFileName){
+    std::ofstream outFile;
+
+    outFile.open(outputFileName);
+
+    if(outFile.is_open()){
+        outFile << inputFileName << endl << endl;
+        outFile << "#.symbol_table "<<Symbol::getAllSymbols().size()<<endl;
+        outFile << "ID" << "    " << "Value" << "    " << "Type" << "    " << "Scope" << "    " << "SectionID" << "    " << "Name" <<endl;
+        for(Symbol* symbol : Symbol::getAllSymbols()){
+            string hexValue = intToHexString(symbol->getValue());
+            while (hexValue.length() < 8){
+                hexValue = "0" + hexValue;
+            }
+            outFile << symbol->getID() << "    " << hexValue << "    " << symbol->getTypeString() << "    " << symbol->getScopeString() << "    " 
+                << Symbol::getSymbol(symbol->getSection()->getName())->getID() << "    " << symbol->getName() <<endl;
+        }
+
+        for(Section* section : Section::getSectionList()){
+            if(section->getId() == 0)continue;
+            outFile << "#." << section->getName()<< "   " << section->getSize() <<endl;
+            outFile << section->getCode()<<endl;
+
+        }
+
+        for(Section* section : Section::getSectionList()){
+            if(section->getId() == 0)continue;
+            outFile << "#.rela." << section->getName() << "    " << section->getReallocationTable()->getReallocations().size()<<endl;
+
+            outFile << "Offset" << "    " << "Type" << "    " << "Symbol" << endl;
+            for(Reallocation* realloc : section->getReallocationTable()->getReallocations()){
+
+                string hexOffset = intToHexString(realloc->location);
+                while (hexOffset.length()<8){
+                    hexOffset = "0" + hexOffset;
+                }
+                
+                outFile << hexOffset << "    " << ReallocationTable::getTypeString(realloc->type) << "    " << realloc->symbol->getID() << endl;
+            } 
+            
+        }
+    }
+
+    outFile.close();
+
+}
+
 void Assembler::compile(string inputFileName, string outputFileName){
 
     Parser *parser = new Parser();  
@@ -1448,6 +1579,9 @@ void Assembler::compile(string inputFileName, string outputFileName){
         for(int i = 0; i < parsedLine.size(); i++){
             parsedLine[i] = parser->trimString(parsedLine[i]);
         }
+        while(parsedLine[0] == "" || parsedLine[0] == " " || parsedLine[0] == " "){
+            parsedLine.erase(parsedLine.begin());
+        }
 
         if(parsedLine.front().find(':') != std::string::npos){
             //label: ...
@@ -1462,7 +1596,7 @@ void Assembler::compile(string inputFileName, string outputFileName){
 
             //add a symbol to the symbol table
             parsedLine[0].pop_back();  // remove the ":" at the end of a label
-            bool isSymbolAdded = addSymbolToTheSymbolList(parsedLine[0], currentLocation, Scope::LOCAL, true, Section::getActiveSection());
+            bool isSymbolAdded = addSymbolToTheSymbolList(parsedLine[0], currentLocation, Scope::LOCAL, true, Section::getActiveSection(), SymbolType::NOTYP);
             if(isSymbolAdded == false)return;
 
             //delete the first word of the line in case there is an instruction after the label
@@ -1478,7 +1612,12 @@ void Assembler::compile(string inputFileName, string outputFileName){
         }else{
             // instructions 
             int success = handleInstructions(parsedLine);
-            if(success !=0)break;
+            if(success !=0){
+                if(success == 1)
+                    break;
+                else
+                    return;
+            }
             currentLocation +=4;       
         }
 
@@ -1487,6 +1626,8 @@ void Assembler::compile(string inputFileName, string outputFileName){
     // Section::determineSectionSizesWithLiteralPools();
 
     Symbol::resolveSymbolValuesAndFLinks();
+
+    writeToFile(inputFileName, outputFileName);
 
     Section::printSectionList();
     Symbol::printSymbolList();

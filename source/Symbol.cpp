@@ -1,11 +1,15 @@
 #include "../include/Symbol.hpp"
+#include "../include/Section.hpp"
+#include "../include/ReallocationTable.hpp"
 
-
+int Symbol::symbolID = 0;
 vector<Symbol*> Symbol::symbolList;
 
-Symbol::Symbol(string name, int value, Scope scope, bool defined, Section* section){
+Symbol::Symbol(string name, int value, Scope scope, bool defined, Section* section, SymbolType type){
+    this->id = symbolID++;
     this->name = name;
     this->value = value;
+    this->type = type;
     this->scope = scope;
     this->defined = defined;
     this->section = section;
@@ -24,12 +28,24 @@ Symbol* Symbol::getSymbol(string name){
 int Symbol::updateFLinkLocationsInLiteralPool(Section* section){
     for(Symbol* symbol : symbolList){
         for(FLinkEntry* entry : symbol->flinks){
-            if(entry->fourBytes && !entry->word){
+            if(entry->type == FlinkType::LITERAL_POOL){
                 if(entry->section == section){
                     entry->location += section->getSize();
                 }
             }
-        }
+
+            if(entry->section == section){
+            // TODO proveri da li su dobro ugnjezdene operacije
+                if(symbol->getScope() == Scope::LOCAL){
+                    section->getReallocationTable()->addReallocation(entry->location, 
+                        Symbol::getSymbol(symbol->getSection()->getName()), ReallocationType::LOCAL_SYM_REALLOC_THIRTY_TWO_BIT);
+                }else if(symbol->getScope() == Scope::EXTERN){
+                    section->getReallocationTable()->addReallocation(entry->location, symbol, ReallocationType::EXT_SYM_REALLOC);
+                }else if(symbol->getScope() == Scope::GLOBAL){
+                    section->getReallocationTable()->addReallocation(entry->location, symbol, ReallocationType::GLOB_SYM_REALLOC);
+                }
+            }
+    }
     }
     return 0;
 }
@@ -44,14 +60,13 @@ int Symbol::resolveSymbolValuesAndFLinks(){
         }
 
         if(symbol->scope == Scope::EXTERN){
-            // TODO kako napraviit relokaciju za extern simbole
-            symbol->scope = Scope::GLOBAL;
 
+            symbol->scope = Scope::GLOBAL;
         }else{
-            // ovde razresavam sve flinkove, ali ih ne stavljam u realloc tabelu? Ili ipak stavljam i za global i za lokal
+
             string hexValue = intToHexString(symbol->value);
             for(FLinkEntry* entry : symbol->flinks){
-                if(entry->fourBytes){
+                if(entry->type == FlinkType::LITERAL_POOL || entry->type == FlinkType::THIRTY_TWO_BIT_VALUE){
 
                     while(hexValue.length()<8){
                         hexValue = "0" + hexValue;
@@ -71,14 +86,15 @@ int Symbol::resolveSymbolValuesAndFLinks(){
 
         
     }
+    return 0;
 }
 
 
 void Symbol::printSymbolList(){
     std::cout<<"-------------------------Symbol table-------------------------------------"<<endl;
-    std::cout<<"      Name           Value          Scope           Section        Defined"<<endl;
+    std::cout<<"      Name      Type     Value          Scope           Section        Defined"<<endl;
     for(Symbol* symbol:symbolList){
-        cout<<symbol->name<<"        "<<symbol->value<<"        "<<symbol->scope<<"        "
+        cout<<symbol->name<<"        "<<symbol->type<<"        "<<symbol->value<<"        "<<symbol->scope<<"        "
             <<symbol->section->getId()<<"        "<<symbol->defined<<endl;
     }
     std::cout<<"--------------------------------------------------------------------------"<<endl;
