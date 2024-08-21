@@ -34,8 +34,10 @@ std::vector<std::string> Parser::splitLine(const std::string& line, char separat
 
 // Remove commas and whitespaces from the beginning and end of a string
 std::string Parser::trimString(const std::string& str) {
-    const std::string chars = " ,";
+    // Include all whitespace characters and comma in the chars string
+    const std::string chars = " \t\n\r\f\v,";
 
+    // Find the position of the first character not in the trim set
     size_t start = str.find_first_not_of(chars);
     if (start == std::string::npos) {
         return ""; // The string is all whitespace or commas

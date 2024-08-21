@@ -23,7 +23,7 @@ Section::Section(std::string name){
 Section::Section(string name, int number){
     this->name = name;
     this->id = number;
-    new Symbol(name, 0, Scope::LOCAL, true, this, SymbolType::SCTN);
+    new Symbol(name, 0, Scope::LOCAL, true, this, SymbolType::SCTN, true);
     literalPool = new LiteralPool();
     reallocationTable = new ReallocationTable();    
     sectionList.push_back(this);

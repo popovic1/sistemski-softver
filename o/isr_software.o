@@ -1,0 +1,13 @@
+tests/isr_software.s
+
+#.symbol_table 4
+ID    Value    Type    Scope    SectionID    Name
+0    00000000    SCTN    LOC    0    UND
+1    00000000    NOTYP    GLOB    0    value1
+2    00000000    SCTN    LOC    2    isr
+3    00000000    NOTYP    GLOB    2    isr_software
+#.isr   40
+81E01FFC81E02FFC921F0014922F001480202000932E0004931E000493FE00040000000000000000
+#.rela.isr    1
+Offset    Type    Symbol
+00000024    EXT_SYM_REALLOC    1

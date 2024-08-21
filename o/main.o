@@ -1,4 +1,4 @@
-input_2.s
+tests/main.s
 
 #.symbol_table 16
 ID    Value    Type    Scope    SectionID    Name

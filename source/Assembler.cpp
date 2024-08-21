@@ -61,7 +61,6 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
         if(Section::getActiveSection()!= nullptr){
             //ovo mozda ne treba ako uvecavam size posle svake instrukcije
             Section::getActiveSection()->finalize();
-            Section::getActiveSection()->printCode();
         }
 
         currentLocation = 0;
@@ -184,7 +183,6 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
         if(Section::getActiveSection()!= nullptr){
             //ovo mozda ne treba ako uvecavam size posle svake instrukcije
             Section::getActiveSection()->finalize();
-            Section::getActiveSection()->printCode();
         }
         
         return 1;
@@ -1330,7 +1328,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     }
     else{
         cout<<"--------------------------------------------------------------"<<endl;
-        cerr<<"Error: Invalid instruction."<<endl;
+        cerr<<"Error: Invalid instruction: " + parsedLine[0] << " " << parsedLine[1]<<endl;
         cout<<"--------------------------------------------------------------"<<endl;
         return -1;
     }
@@ -1558,13 +1556,16 @@ void Assembler::writeToFile(string inputFileName, string outputFileName){
 
 }
 
-void Assembler::compile(string inputFileName, string outputFileName){
+void Assembler::compile(std::string inputFileName, std::string outputFileName){
 
     Parser *parser = new Parser();  
 
     std::vector<string> allLines = parser->readLinesFromFile(inputFileName);
 
     for(string line : allLines){
+
+        line = parser->trimString(line);
+        if(line.length() == 0)continue;
 
         // handle comments
         std::size_t hashtagPosition = line.find('#');
@@ -1579,9 +1580,10 @@ void Assembler::compile(string inputFileName, string outputFileName){
         for(int i = 0; i < parsedLine.size(); i++){
             parsedLine[i] = parser->trimString(parsedLine[i]);
         }
-        while(parsedLine[0] == "" || parsedLine[0] == " " || parsedLine[0] == " "){
+        while(line.length()>0 && parsedLine[0] == ""){
             parsedLine.erase(parsedLine.begin());
         }
+        if(line.length() == 0)continue;
 
         if(parsedLine.front().find(':') != std::string::npos){
             //label: ...
@@ -1629,6 +1631,4 @@ void Assembler::compile(string inputFileName, string outputFileName){
 
     writeToFile(inputFileName, outputFileName);
 
-    Section::printSectionList();
-    Symbol::printSymbolList();
 }

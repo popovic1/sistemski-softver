@@ -6,7 +6,20 @@ int Symbol::symbolID = 0;
 vector<Symbol*> Symbol::symbolList;
 
 Symbol::Symbol(string name, int value, Scope scope, bool defined, Section* section, SymbolType type){
-    this->id = symbolID++;
+    Section::getUndefinedSection();
+    this->id = ++symbolID;
+    this->name = name;
+    this->value = value;
+    this->type = type;
+    this->scope = scope;
+    this->defined = defined;
+    this->section = section;
+    symbolList.push_back(this);
+    
+}
+
+Symbol::Symbol(string name, int value, Scope scope, bool defined, Section* section, SymbolType type, bool undSection){
+    this->id = 0;
     this->name = name;
     this->value = value;
     this->type = type;

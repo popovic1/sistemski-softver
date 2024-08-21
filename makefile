@@ -9,6 +9,7 @@ SRC_DIR = source
 OBJ_DIR = obj
 BIN_DIR = bin
 INC_DIR = include
+O_DIR = o
 
 # Source files
 SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
@@ -17,7 +18,7 @@ SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 
 # Executable name
-TARGET = $(BIN_DIR)/main
+TARGET = $(BIN_DIR)/assembler
 
 # Default target
 all: $(TARGET)
@@ -46,9 +47,9 @@ clean:
 .PHONY: all clean
 
 assemble:
-	./bin/main -o o/main.o tests/main.s
-	./bin/main -o o/math.o tests/math.s
-	./bin/main -o o/handler.o tests/handler.s
-	./bin/main -o o/isr_software.o tests/isr_software.s
-	./bin/main -o o/isr_terminal.o tests/isr_terminal.s
-	./bin/main -o o/isr_timer.o tests/isr_timer.s
+	./bin/assembler -o o/main.o tests/main.s
+	./bin/assembler -o o/math.o tests/math.s
+	./bin/assembler -o o/isr_software.o tests/isr_software.s
+	./bin/assembler -o o/isr_timer.o tests/isr_timer.s
+	./bin/assembler -o o/isr_terminal.o tests/isr_terminal.s
+	./bin/assembler -o o/handler.o tests/handler.s

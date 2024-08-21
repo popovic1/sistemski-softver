@@ -45,6 +45,8 @@ private:
 public:
     Symbol(string name, int value, Scope scope, bool defined, Section* section, SymbolType type);
 
+    Symbol(string name, int value, Scope scope, bool defined, Section* section, SymbolType type, bool undSection);
+
     ~Symbol();
 
     static Symbol* getSymbol(string name);
