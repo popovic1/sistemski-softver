@@ -41,7 +41,7 @@ int Section::finalize(){
 
             if(hexOffset.length()>3){
                 cout<<"------------------------------------------"<<endl;
-                std::cerr<<"Error: Offset to the literal pool can't fit into 12 bits." <<endl;
+                std::cerr<<"Error - Assembler: Offset to the literal pool can't fit into 12 bits." <<endl;
                 cout<<"------------------------------------------"<<endl;
                 return -1;
             }
@@ -69,7 +69,7 @@ void Section::addLiteralPoolToCode(){
         LiteralPoolEntry* entry = literalPool->getEntryByLocation(i*4);
         if(entry == nullptr){
             cout<<"------------------------------------------"<<endl;
-            std::cerr<<"Error: Literal pool wasn't populated properly. Missing a location." <<endl;
+            std::cerr<<"Error - Assembler: Literal pool wasn't populated properly. Missing a location." <<endl;
             cout<<"------------------------------------------"<<endl;
             return;
         }
@@ -81,7 +81,7 @@ void Section::addLiteralPoolToCode(){
 
         if(hex.length()>8){
             cout<<"------------------------------------------"<<endl;
-            std::cerr<<"Error: Entry to the literal pool bigger than 4 bytes." <<endl;
+            std::cerr<<"Error - Assembler: Entry to the literal pool bigger than 4 bytes." <<endl;
             cout<<"------------------------------------------"<<endl;
             return;
         }
@@ -97,7 +97,7 @@ void Section::addLiteralPoolToCode(){
 
 int Section::isNumber(std::string arg) {
     if (arg.empty()) {
-        return -1; // Error: empty string
+        return -1; // Error - Assembler: empty string
     }
 
     // Check for hexadecimal format (starts with "0x" or "0X")
@@ -105,7 +105,7 @@ int Section::isNumber(std::string arg) {
         // Check if the rest of the string are valid hex digits
         for (size_t i = 2; i < arg.size(); ++i) {
             if (!isxdigit(arg[i])) {
-                return -1; // Error: invalid hex number
+                return -1; // Error - Assembler: invalid hex number
             }
         }
         return 1; // It's a hexadecimal number
@@ -114,7 +114,7 @@ int Section::isNumber(std::string arg) {
     // Check for decimal format
     for (size_t i = 0; i < arg.size(); ++i) {
         if (!isdigit(arg[i])) {
-            return -1; // Error: invalid decimal number
+            return -1; // Error - Assembler: invalid decimal number
         }
     }
 

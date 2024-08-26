@@ -6,28 +6,39 @@ CXXFLAGS = -std=c++11 -Wall -g -O0 -Iinclude
 
 # Directories
 SRC_DIR = source
-BIN_DIR = bin
 INC_DIR = include
-TEST_DIR = tests
+BIN_DIR = bin
 O_DIR = obj
+TEST_DIR = tests
 
-# Source files
-SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+# Assembler source files
+ASSEMBLER_SRC_FILES = main.cpp Assembler.cpp LiteralPool.cpp Parser.cpp ReallocationTable.cpp Symbol.cpp Section.cpp
+ASSEMBLER_OBJ_FILES = $(patsubst %.cpp,$(BIN_DIR)/%.o,$(ASSEMBLER_SRC_FILES))
 
-# Object files (temporarily stored in bin)
-OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/%.o,$(SRC_FILES))
+# Linker source files
+LINKER_SRC_FILES = linkerMain.cpp Linker.cpp LinkerSymbol.cpp LinkerSection.cpp LinkerReallocation.cpp
+LINKER_OBJ_FILES = $(patsubst %.cpp,$(BIN_DIR)/%.o,$(LINKER_SRC_FILES))
 
-# Executable name
-TARGET = $(BIN_DIR)/assembler
+# Executable names
+ASSEMBLER_TARGET = $(BIN_DIR)/assembler
+LINKER_TARGET = $(BIN_DIR)/linker
 
 # Default target
-all: $(TARGET) | $(O_DIR)
+all: $(ASSEMBLER_TARGET) $(LINKER_TARGET) | $(O_DIR)
 
-# Rule to link object files to create the executable
-$(TARGET): $(OBJ_FILES) | $(BIN_DIR)
-	$(CXX) $(OBJ_FILES) -o $@
+# Rule to link object files to create the assembler executable
+$(ASSEMBLER_TARGET): $(ASSEMBLER_OBJ_FILES) | $(BIN_DIR)
+	$(CXX) $(ASSEMBLER_OBJ_FILES) -o $@
 
-# Rule to compile source files into object files (in the bin directory)
+# Rule to link object files to create the linker executable
+$(LINKER_TARGET): $(LINKER_OBJ_FILES) | $(BIN_DIR)
+	$(CXX) $(LINKER_OBJ_FILES) -o $@
+
+# Rule to compile source files into object files for assembler
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Rule to compile source files into object files for linker
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -35,7 +46,7 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-# Create o directory if it doesn't exist
+# Create obj directory if it doesn't exist
 $(O_DIR):
 	mkdir -p $(O_DIR)
 
@@ -45,7 +56,6 @@ clean:
 
 # Phony targets
 .PHONY: all clean
-
 assemble:
 	./bin/assembler -o $(O_DIR)/main.o $(TEST_DIR)/main.s
 	./bin/assembler -o $(O_DIR)/math.o $(TEST_DIR)/math.s
@@ -53,3 +63,7 @@ assemble:
 	./bin/assembler -o $(O_DIR)/isr_timer.o $(TEST_DIR)/isr_timer.s
 	./bin/assembler -o $(O_DIR)/isr_terminal.o $(TEST_DIR)/isr_terminal.s
 	./bin/assembler -o $(O_DIR)/handler.o $(TEST_DIR)/handler.s
+
+link:
+	./bin/linker -hex -o aa.hex $(O_DIR)/main.o $(O_DIR)/math.o $(O_DIR)/isr_software.o $(O_DIR)/isr_timer.o \
+	$(O_DIR)/isr_terminal.o 

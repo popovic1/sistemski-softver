@@ -67,7 +67,7 @@ int Symbol::resolveSymbolValuesAndFLinks(){
     for(Symbol* symbol : Symbol::symbolList){
         if(!symbol->isDefined() && symbol->scope != Scope::EXTERN){
             cout<<"------------------------------------------"<<endl;
-            std::cerr<<"Error: Symbol not defined:" + symbol->getName()<<endl;
+            std::cerr<<"Error - Assembler: Symbol not defined:" + symbol->getName()<<endl;
             cout<<"------------------------------------------"<<endl;
             return -1;
         }

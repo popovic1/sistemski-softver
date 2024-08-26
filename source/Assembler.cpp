@@ -32,7 +32,7 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
 
             if(existingSymbol != nullptr){
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Symbol already defined" + parsedLine[i]<<endl;
+                cerr<<"Error - Assembler: Symbol already defined" + parsedLine[i]<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }else{
@@ -46,14 +46,14 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
     {
         if(parsedLine.size()!=2){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
 
         if(isValidIdentifier(parsedLine[1].substr(1))==false){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Invalid section name."<<endl;
+            cerr<<"Error - Assembler: Invalid section name."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -71,14 +71,14 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
     {
         if(parsedLine.size()<2){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
 
         if(Section::getActiveSection() == nullptr){
             cout<<"------------------------------------------"<<endl;
-            std::cerr<<"Error: Word directive needs to be in a section."<<endl;
+            std::cerr<<"Error - Assembler: Word directive needs to be in a section."<<endl;
             cout<<"------------------------------------------"<<endl;
             return -1;
         }
@@ -120,14 +120,14 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
                 valueOfWord = hexToDecimal(parsedLine[i]);
             }else{
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Function isNumber doesn't work properly."<<endl;
+                cerr<<"Error - Assembler: Function isNumber doesn't work properly."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
             
             if (valueOfWord > 2147483647 || valueOfWord < -2147483648){
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Invalid parameter. The value is out of range:" + parsedLine[i]<<endl;
+                cerr<<"Error - Assembler: Invalid parameter. The value is out of range:" + parsedLine[i]<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
@@ -143,14 +143,14 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 2){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
 
         if(Section::getActiveSection() == nullptr){
                 cout<<"------------------------------------------"<<endl;
-                std::cerr<<"Error: Skip directive needs to be in a section."<<endl;
+                std::cerr<<"Error - Assembler: Skip directive needs to be in a section."<<endl;
                 cout<<"------------------------------------------"<<endl;
                 return -1;
             }
@@ -159,7 +159,7 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
 
         if(isNum == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: The argument has to be a number."<<endl;
+            cerr<<"Error - Assembler: The argument has to be a number."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }else if(isNum == 0){
@@ -190,7 +190,7 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
     else
     {
         cout<<"--------------------------------------------------------------"<<endl;
-        cerr<<"Error: Invalid directive."<<endl;
+        cerr<<"Error - Assembler: Invalid directive."<<endl;
         cout<<"--------------------------------------------------------------"<<endl;
         return -1;
     }
@@ -206,7 +206,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -216,7 +216,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -226,7 +226,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -240,7 +240,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 2){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -298,7 +298,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -308,7 +308,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 2){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -365,7 +365,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 4){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax: " + to_string(parsedLine.size())<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax: " + to_string(parsedLine.size())<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -375,7 +375,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -432,7 +432,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 4){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -442,7 +442,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -498,7 +498,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 4){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -508,7 +508,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -564,7 +564,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 2){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -573,7 +573,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%'|| regNum == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -586,7 +586,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 2){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -595,7 +595,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%'|| regNum == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -608,7 +608,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -618,7 +618,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -631,7 +631,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -641,7 +641,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -654,7 +654,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -664,7 +664,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -677,7 +677,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -687,7 +687,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -700,7 +700,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -710,7 +710,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -723,7 +723,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 2){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -732,7 +732,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || regNum1 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -745,7 +745,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -755,7 +755,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -768,7 +768,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -778,7 +778,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -791,7 +791,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -801,7 +801,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -814,7 +814,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -824,7 +824,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -837,7 +837,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -847,7 +847,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || regNum1 == -1 || regNum2 == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -861,7 +861,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
         int regNum = 0;
         if(parsedLine.size() < 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }else if(parsedLine.size() == 3){
@@ -870,7 +870,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
             if(parsedLine[2][0] != '%' || regNum == -1){
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Last parameter is not a register or doesn't start with '%'."<<endl;
+                cerr<<"Error - Assembler: Last parameter is not a register or doesn't start with '%'."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
@@ -931,7 +931,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 int regNum2 = isRegister(parsedLine[1].substr(1));
                 if(parsedLine[1][0] != '%' || regNum2 == -1){
                     cout<<"--------------------------------------------------------------"<<endl;
-                    cerr<<"Error: First parameter is not a register or doesn't start with '%'."<<endl;
+                    cerr<<"Error - Assembler: First parameter is not a register or doesn't start with '%'."<<endl;
                     cout<<"--------------------------------------------------------------"<<endl;
                     return -1;
                 }
@@ -945,7 +945,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
                 if(parsedLine[1][1] != '%' || parsedLine[1][parsedLine[1].length() -1] != ']' || regNum2 == -1){
                     cout<<"--------------------------------------------------------------"<<endl;
-                    cerr<<"Error: First parameter is not a register or isn't properly written."<<endl;
+                    cerr<<"Error - Assembler: First parameter is not a register or isn't properly written."<<endl;
                     cout<<"--------------------------------------------------------------"<<endl;
                     return -1;
                 }
@@ -1018,7 +1018,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
             if(parsedLine[parsedLine.size()-1][0] != '%' || regNum == -1){
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Last parameter is not a register or doesn't start with '%'."<<endl;
+                cerr<<"Error - Assembler: Last parameter is not a register or doesn't start with '%'."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
@@ -1029,7 +1029,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
             parsedLine[3][parsedLine[3].length()-1] != ']')
             {
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Incorrect expression."<<endl;
+                cerr<<"Error - Assembler: Incorrect expression."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
@@ -1052,7 +1052,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
                 }else{
                     cout<<"--------------------------------------------------------------"<<endl;
-                    cerr<<"Error: Literal can't fit in 12 bits."<<endl;
+                    cerr<<"Error - Assembler: Literal can't fit in 12 bits."<<endl;
                     cout<<"--------------------------------------------------------------"<<endl;
                     return -1;
                 }
@@ -1083,14 +1083,14 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
                     }else{
                         cout<<"--------------------------------------------------------------"<<endl;
-                        cerr<<"Error: Symbol value can't fit in 12 bits."<<endl;
+                        cerr<<"Error - Assembler: Symbol value can't fit in 12 bits."<<endl;
                         cout<<"--------------------------------------------------------------"<<endl;
                         return -1;
                     }                    
 
                 }else{
                     cout<<"--------------------------------------------------------------"<<endl;
-                    cerr<<"Error: Symbol doesn't exist or isn't defined."<<endl;
+                    cerr<<"Error - Assembler: Symbol doesn't exist or isn't defined."<<endl;
                     cout<<"--------------------------------------------------------------"<<endl;
                     return -1;
                 }
@@ -1104,7 +1104,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
         int regNum = 0;
         if(parsedLine.size() < 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }else if(parsedLine.size() == 3){
@@ -1113,7 +1113,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
             if(parsedLine[1][0] != '%' || regNum == -1){
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: First parameter is not a register or doesn't start with '%'."<<endl;
+                cerr<<"Error - Assembler: First parameter is not a register or doesn't start with '%'."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
@@ -1121,14 +1121,14 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
             if(parsedLine[2][0]=='$'){ // vrednost literala ili simbola
 
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Can't store to an immidate value."<<endl;
+                cerr<<"Error - Assembler: Can't store to an immidate value."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
                         
             }else if(parsedLine[2][0] == '%'){ // vrednost u registru
 
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Can't store into a register."<<endl;
+                cerr<<"Error - Assembler: Can't store into a register."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
 
@@ -1138,7 +1138,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
                 if(parsedLine[2][1] != '%' || parsedLine[2][parsedLine[2].length() -1] != ']' || regNum2 == -1){
                     cout<<"--------------------------------------------------------------"<<endl;
-                    cerr<<"Error: First parameter is not a register or isn't properly written."<<endl;
+                    cerr<<"Error - Assembler: First parameter is not a register or isn't properly written."<<endl;
                     cout<<"--------------------------------------------------------------"<<endl;
                     return -1;
                 }
@@ -1202,7 +1202,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
             if(parsedLine[1][0] != '%' || regNum == -1){
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: First parameter is not a register or doesn't start with '%'."<<endl;
+                cerr<<"Error - Assembler: First parameter is not a register or doesn't start with '%'."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
@@ -1213,7 +1213,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
             parsedLine[4][parsedLine[4].length()-1] != ']')
             {
                 cout<<"--------------------------------------------------------------"<<endl;
-                cerr<<"Error: Incorrect expression."<<endl;
+                cerr<<"Error - Assembler: Incorrect expression."<<endl;
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
@@ -1236,7 +1236,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
                 }else{
                     cout<<"--------------------------------------------------------------"<<endl;
-                    cerr<<"Error: Literal can't fit in 12 bits."<<endl;
+                    cerr<<"Error - Assembler: Literal can't fit in 12 bits."<<endl;
                     cout<<"--------------------------------------------------------------"<<endl;
                     return -1;
                 }
@@ -1266,14 +1266,14 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
                     }else{
                         cout<<"--------------------------------------------------------------"<<endl;
-                        cerr<<"Error: Symbol value can't fit in 12 bits."<<endl;
+                        cerr<<"Error - Assembler: Symbol value can't fit in 12 bits."<<endl;
                         cout<<"--------------------------------------------------------------"<<endl;
                         return -1;
                     }                    
 
                 }else{
                     cout<<"--------------------------------------------------------------"<<endl;
-                    cerr<<"Error: Symbol doesn't exist or isn't defined."<<endl;
+                    cerr<<"Error - Assembler: Symbol doesn't exist or isn't defined."<<endl;
                     cout<<"--------------------------------------------------------------"<<endl;
                     return -1;
                 }
@@ -1284,7 +1284,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -1294,7 +1294,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || csrReg == -1 || regNum == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a csr/register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a csr/register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -1307,7 +1307,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     {
         if(parsedLine.size() != 3){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Incorrect syntax."<<endl;
+            cerr<<"Error - Assembler: Incorrect syntax."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -1317,7 +1317,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
 
         if(parsedLine[1][0] != '%' || parsedLine[2][0] != '%' || csrReg == -1 || regNum == -1){
             cout<<"--------------------------------------------------------------"<<endl;
-            cerr<<"Error: Parameter is not a csr/register or doesn't start with '%'."<<endl;
+            cerr<<"Error - Assembler: Parameter is not a csr/register or doesn't start with '%'."<<endl;
             cout<<"--------------------------------------------------------------"<<endl;
             return -1;
         }
@@ -1328,7 +1328,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
     }
     else{
         cout<<"--------------------------------------------------------------"<<endl;
-        cerr<<"Error: Invalid instruction: " + parsedLine[0] << " " << parsedLine[1]<<endl;
+        cerr<<"Error - Assembler: Invalid instruction: " + parsedLine[0] << " " << parsedLine[1]<<endl;
         cout<<"--------------------------------------------------------------"<<endl;
         return -1;
     }
@@ -1340,7 +1340,7 @@ bool Assembler::addSymbolToTheSymbolList(string name, int value, Scope scope, bo
     // check if the symbol can be added and is valid (i.e. can't be 343ff55)
     if(isValidIdentifier(name) == false){
         cout<<"-----------------------------------------"<<endl;
-        std::cerr<<"Error: identifier name is not valid: " + name<<endl;
+        std::cerr<<"Error - Assembler: identifier name is not valid: " + name<<endl;
         cout<<"-----------------------------------------"<<endl;
         return false;
     }
@@ -1349,14 +1349,14 @@ bool Assembler::addSymbolToTheSymbolList(string name, int value, Scope scope, bo
     // check if the symbol already exists
     Symbol* existingSymbol = Symbol::getSymbol(name);
     if(existingSymbol == nullptr){
-        Symbol* newSymbol = new Symbol(name, value, scope, defined, section, type);
+        new Symbol(name, value, scope, defined, section, type);
         return true;
 
     }else{
 
         if(existingSymbol->isDefined()){
             cout<<"-----------------------------------------"<<endl;
-            std::cerr<<"Error: identifier already defined: " + name<<endl;
+            std::cerr<<"Error - Assembler: identifier already defined: " + name<<endl;
             cout<<"-----------------------------------------"<<endl;
 
             return false;
@@ -1391,7 +1391,7 @@ bool Assembler::isValidIdentifier(const std::string& name) {
 
 int Assembler::isNumber(std::string arg) {
     if (arg.empty()) {
-        return -1; // Error: empty string
+        return -1; // Error - Assembler: empty string
     }
 
     // Check for hexadecimal format (starts with "0x" or "0X")
@@ -1399,7 +1399,7 @@ int Assembler::isNumber(std::string arg) {
         // Check if the rest of the string are valid hex digits
         for (size_t i = 2; i < arg.size(); ++i) {
             if (!isxdigit(arg[i])) {
-                return -1; // Error: invalid hex number
+                return -1; // Error - Assembler: invalid hex number
             }
         }
         return 1; // It's a hexadecimal number
@@ -1408,7 +1408,7 @@ int Assembler::isNumber(std::string arg) {
     // Check for decimal format
     for (size_t i = 0; i < arg.size(); ++i) {
         if (!isdigit(arg[i])) {
-            return -1; // Error: invalid decimal number
+            return -1; // Error - Assembler: invalid decimal number
         }
     }
 
@@ -1427,7 +1427,7 @@ int Assembler::hexToDecimal(string hex){
             decimal += digit - 'A' + 10;
         } else {
             cout<<"---------------------------------"<<endl;
-            cerr << "Error: Invalid hexadecimal digit: " << digit <<endl;
+            cerr << "Error - Assembler: Invalid hexadecimal digit: " << digit <<endl;
             cout<<"---------------------------------"<<endl;
             return -1; 
         }
@@ -1515,30 +1515,44 @@ void Assembler::writeToFile(string inputFileName, string outputFileName){
     outFile.open(outputFileName);
 
     if(outFile.is_open()){
-        outFile << inputFileName << endl << endl;
-        outFile << "#.symbol_table "<<Symbol::getAllSymbols().size()<<endl;
-        outFile << "ID" << "    " << "Value" << "    " << "Type" << "    " << "Scope" << "    " << "SectionID" << "    " << "Name" <<endl;
+        outFile << inputFileName << endl;
+        outFile << "#.symbol_table\t"<<Symbol::getAllSymbols().size()<<endl;
+        outFile << "ID" << "\t" << "Value" << "\t" << "Type" << "\t" << "Scope" << "\t" << "SectionID" << "\t" << "Name" <<endl;
         for(Symbol* symbol : Symbol::getAllSymbols()){
             string hexValue = intToHexString(symbol->getValue());
             while (hexValue.length() < 8){
                 hexValue = "0" + hexValue;
             }
-            outFile << symbol->getID() << "    " << hexValue << "    " << symbol->getTypeString() << "    " << symbol->getScopeString() << "    " 
-                << Symbol::getSymbol(symbol->getSection()->getName())->getID() << "    " << symbol->getName() <<endl;
+            outFile << symbol->getID() << "\t" << hexValue << "\t" << symbol->getTypeString() << "\t" << symbol->getScopeString() << "\t" 
+                << Symbol::getSymbol(symbol->getSection()->getName())->getID() << "\t" << symbol->getName() <<endl;
         }
+
+        int cntCode = 0;
+        int cntRela = 0;
 
         for(Section* section : Section::getSectionList()){
             if(section->getId() == 0)continue;
-            outFile << "#." << section->getName()<< "   " << section->getSize() <<endl;
+            if(section->getSize() != 0) cntCode++;
+            if(section->getReallocationTable()->getReallocations().size() != 0) cntRela++;
+
+        }
+
+        outFile<<"[]\tNumber_of_sections_with_code:\t"<<cntCode<<endl;
+
+        for(Section* section : Section::getSectionList()){
+            if(section->getId() == 0 || section->getSize() == 0)continue;
+            outFile << "#." << section->getName()<< "\t" << section->getSize() <<endl;
             outFile << section->getCode()<<endl;
 
         }
 
-        for(Section* section : Section::getSectionList()){
-            if(section->getId() == 0)continue;
-            outFile << "#.rela." << section->getName() << "    " << section->getReallocationTable()->getReallocations().size()<<endl;
+        outFile<<"[]\tNumber_of_sections_with_rela_table:\t"<<cntRela<<endl;
 
-            outFile << "Offset" << "    " << "Type" << "    " << "Symbol" << endl;
+        for(Section* section : Section::getSectionList()){
+            if(section->getId() == 0 || section->getReallocationTable()->getReallocations().size() == 0)continue;
+            outFile << "#.rela." << section->getName() << "\t" << section->getReallocationTable()->getReallocations().size()<<endl;
+
+            outFile << "Offset" << "\t" << "Type" << "\t" << "Symbol" << endl;
             for(Reallocation* realloc : section->getReallocationTable()->getReallocations()){
 
                 string hexOffset = intToHexString(realloc->location);
@@ -1546,7 +1560,7 @@ void Assembler::writeToFile(string inputFileName, string outputFileName){
                     hexOffset = "0" + hexOffset;
                 }
                 
-                outFile << hexOffset << "    " << ReallocationTable::getTypeString(realloc->type) << "    " << realloc->symbol->getID() << endl;
+                outFile << hexOffset << "\t" << ReallocationTable::getTypeString(realloc->type) << "\t" << realloc->symbol->getID() << endl;
             } 
             
         }
@@ -1591,7 +1605,7 @@ void Assembler::compile(std::string inputFileName, std::string outputFileName){
             // label needs to be in a section
             if(Section::getActiveSection() == nullptr){
                 cout<<"------------------------------------------"<<endl;
-                std::cerr<<"Error: Label needs to be in a section:" + parsedLine[0]<<endl;
+                std::cerr<<"Error - Assembler: Label needs to be in a section:" + parsedLine[0]<<endl;
                 cout<<"------------------------------------------"<<endl;
                 return;
             }

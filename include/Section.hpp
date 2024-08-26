@@ -25,7 +25,7 @@ private:
     int size = 0;
     std::string code = "";
     LiteralPool* literalPool;;
-    ReallocationTable* reallocationTable;;
+    ReallocationTable* reallocationTable;
 
     Section(string name, int number);
 
