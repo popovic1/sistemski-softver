@@ -385,6 +385,57 @@ int Linker::resolveSymbolValues(){
 }
 
 int Linker::resolveReallocations(){
+    for(LinkerReallocation* rela : LinkerReallocation::getReallocations()){
+        if(rela->isResolved())continue;
+        
+        if(rela->getType() == ReallocationType::LOCAL_SYM_REALLOC_THIRTY_TWO_BIT || rela->getType() == ReallocationType::GLOB_SYM_REALLOC){
+            LinkerSection* sctn = LinkerSection::getLinkerSection(rela->getFileID(), rela->getSectionID());
+            
+            uint32_t offset = hexToUint32(rela->getOffset());
+            LinkerSymbol* symbol = LinkerSymbol::getLinkerSymbol(rela->getFileID(), rela->getSymbolID());
+            if(symbol == nullptr || !symbol->isResolved()){
+                cout<<"------------------------------------------------"<<endl;
+                std::cerr << "Error - Linker: No such symbol in rela: " << rela->getSymbolID()<< std::endl;
+                cout<<"------------------------------------------------"<<endl;
+                return -1;
+            }
+            string correctValue = symbol->getValue();
+            string code = sctn->getCode();
+            for(int i = 0; i<8; i++){
+                code[offset + i] = correctValue[i];
+            }
+
+            sctn->setCode(code);
+            rela->setResolved(true);
+
+        }else if(rela->getType() == ReallocationType::EXT_SYM_REALLOC){
+            LinkerSection* sctn = LinkerSection::getLinkerSection(rela->getFileID(), rela->getSectionID());
+            uint32_t offset = hexToDecimal(rela->getOffset());
+            LinkerSymbol* undSymbol = LinkerSymbol::getLinkerSymbol(rela->getFileID(), rela->getSymbolID());
+            string symName = undSymbol->getName();
+            LinkerSymbol* symbol = LinkerSymbol::getGlobalSymbol(symName);
+            if(symbol == nullptr || !symbol->isResolved()){
+                cout<<"------------------------------------------------"<<endl;
+                std::cerr << "Error - Linker: No such symbol in rela: " << rela->getSymbolID()<< std::endl;
+                cout<<"------------------------------------------------"<<endl;
+                return -1;
+            }
+            string correctValue = symbol->getValue();
+            string code = sctn->getCode();
+
+            for(int i = 0; i<8; i++){
+                code[offset + i] = correctValue[i];
+            }
+
+            sctn->setCode(code);
+            rela->setResolved(true);
+        }else{
+            cout<<"------------------------------------------------"<<endl;
+            std::cerr << "Error - Linker: Unsupported reallocation type: " << rela->getType()<< std::endl;
+            cout<<"------------------------------------------------"<<endl;
+            return -1;
+        }
+    }
     return 0;
 }
 

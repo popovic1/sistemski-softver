@@ -106,7 +106,7 @@ int Assembler::handleDirectives(std::vector<string> parsedLine){
 
                 if(symbol->getScope() == Scope::LOCAL){
                     Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, 
-                        Symbol::getSymbol(symbol->getSection()->getName()), ReallocationType::LOCAL_SYM_REALLOC_THIRTY_TWO_BIT);
+                        symbol, ReallocationType::LOCAL_SYM_REALLOC_THIRTY_TWO_BIT);
                 }else if(symbol->getScope() == Scope::EXTERN){
                     Section::getActiveSection()->getReallocationTable()->addReallocation(currentLocation, symbol, ReallocationType::EXT_SYM_REALLOC);
                 }else if(symbol->getScope() == Scope::GLOBAL){

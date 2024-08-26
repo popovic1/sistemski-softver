@@ -51,7 +51,7 @@ int Symbol::updateFLinkLocationsInLiteralPool(Section* section){
             // TODO proveri da li su dobro ugnjezdene operacije
                 if(symbol->getScope() == Scope::LOCAL){
                     section->getReallocationTable()->addReallocation(entry->location, 
-                        Symbol::getSymbol(symbol->getSection()->getName()), ReallocationType::LOCAL_SYM_REALLOC_THIRTY_TWO_BIT);
+                        symbol, ReallocationType::LOCAL_SYM_REALLOC_THIRTY_TWO_BIT);
                 }else if(symbol->getScope() == Scope::EXTERN){
                     section->getReallocationTable()->addReallocation(entry->location, symbol, ReallocationType::EXT_SYM_REALLOC);
                 }else if(symbol->getScope() == Scope::GLOBAL){

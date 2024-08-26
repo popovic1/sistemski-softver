@@ -42,6 +42,24 @@ public:
 
     static LinkerSymbol* getSymbol(string name);
 
+    static LinkerSymbol* getLinkerSymbol(int fileID, int symbolID){
+        for(LinkerSymbol* s : symbolList){
+            if(s->fileID == fileID && s->id == symbolID){
+                return s;
+            }
+        }
+        return nullptr;
+    }
+
+    static LinkerSymbol* getGlobalSymbol(string name){
+        for(LinkerSymbol* s : globalSymbolTable){
+            if(s->name == name){
+                return s;
+            }
+        }
+        return nullptr;
+    }
+
     static void printGlobalSymTable();
 
     string getName(){

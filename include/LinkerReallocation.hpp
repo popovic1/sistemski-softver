@@ -21,10 +21,43 @@ private:
     int symbolID;
     int fileID;
     int sectionID;
+    bool resolved = false;
 
 public:
 
     LinkerReallocation(int fileID, string offset, string type, string symbolID, int sectionID);
+
+    static vector<LinkerReallocation*> getReallocations(){
+        return reallocations;
+    }
+
+    ReallocationType getType(){
+        return type;
+    }
+
+    int getFileID(){
+        return fileID;
+    }
+
+    int getSectionID(){
+        return sectionID;
+    }
+
+    int getSymbolID(){
+        return symbolID;
+    }
+
+    string getOffset(){
+        return offset;
+    }
+
+    void setResolved(bool r){
+        resolved = r;
+    }
+
+    bool isResolved(){
+        return resolved;
+    }
 };
 
 #endif
