@@ -14,11 +14,14 @@ class LinkerSymbol;
 class LinkerSection{
 private:
     static std::vector<LinkerSection*> sectionList;
+    static std::vector<LinkerSection*> mappedSectionsList;
     int fileID;
     int id;
     std::string name;
-    int size = 0;
+    uint32_t size = 0;
     std::string code = "";
+    bool mapped = false;
+    uint32_t startAdress = 0;
 
 public:
     LinkerSection(int fileID, int id, std::string name);
@@ -45,8 +48,26 @@ public:
         return size;
     }
 
-    void setSize(int size){
+    void setSize(uint32_t size){
         this->size = size;
+    }
+
+    void setStartAddress(uint32_t address){
+        this->startAdress = address;
+    }
+
+    int getStartAdress(){
+        return startAdress;
+    }
+
+    void map(int address){
+        this->startAdress = address;
+        mapped = true;
+        mappedSectionsList.push_back(this);
+    }
+
+    bool isMapped(){
+        return mapped;
     }
 
     string getCode(){
@@ -61,6 +82,10 @@ public:
         return sectionList;
     }
 
+    static std::vector<LinkerSection*> getMappedSectionsList(){
+        return mappedSectionsList;
+    }
+
     static LinkerSection* getLinkerSection(int fileID, int id){
         for(LinkerSection* section: sectionList){
             if(section->getId() == id && section->getFileID() == fileID){
@@ -71,6 +96,8 @@ public:
     }
 
     void printCode();
+
+    static void printSectionList();
 
     void modifyCode(int startPosition, int length, string modifiedCode);
 

@@ -3,7 +3,8 @@
 #include "../include/LinkerSection.hpp"
 #include "../include/LinkerReallocation.hpp"
 
-int Linker::fileNumber = 0;
+int Linker::numberOfFIles = 0;
+int Linker::nextSectionAddr = 1073741824;
 
 void Linker::addPlace(string key, string value){
     places[key] = value;
@@ -77,6 +78,44 @@ int Linker::isNumber(std::string arg) {
     return 0; // It's a decimal number
 }
 
+int Linker::hexToDecimal(string hex){
+    int decimal = 0;
+    for (size_t i = 2; i < hex.size(); ++i) {
+        char digit = toupper(hex[i]); 
+        decimal *= 16; 
+
+        if (digit >= '0' && digit <= '9') {
+            decimal += digit - '0';
+        } else if (digit >= 'A' && digit <= 'F') {
+            decimal += digit - 'A' + 10;
+        } else {
+            cout<<"---------------------------------"<<endl;
+            cerr << "Error - Linker: Invalid hexadecimal digit: " << digit <<endl;
+            cout<<"---------------------------------"<<endl;
+            return -1; 
+        }
+    }
+
+    return decimal;
+}
+
+uint32_t Linker::hexToUint32(const std::string& hex) {
+    return static_cast<uint32_t>(std::stoul(hex, nullptr, 16));
+}
+
+bool Linker::overlap(uint32_t start1, uint32_t size1, uint32_t start2, uint32_t size2) {
+    int end1 = start1 + size1;
+    int end2 = start2 + size2;
+
+    return (start1 < end2) && (start2 < end1);
+}
+
+std::string Linker::uint32ToHexString(uint32_t value) {
+    std::stringstream ss;
+    ss << std::hex << std::setw(8) << std::setfill('0') << value;
+    return ss.str();
+}
+
 int Linker::loadDataFromFiles(){
 
     for(string inputFile : inputFileNames)
@@ -106,7 +145,7 @@ int Linker::loadDataFromFiles(){
         }
 
 
-        int thisFileID = ++fileNumber;
+        int thisFileID = ++numberOfFIles;
         int stageOfFile = 0;
         int cnt = 0;
         int cntRela = 0;
@@ -114,6 +153,7 @@ int Linker::loadDataFromFiles(){
         int numOfSections = 0;
         int numOfReallocations = 0;
         int currSectionID = 0;
+        int currSectionSize = 0;
         vector<string> parsedLine;
         for(string line : lines){
 
@@ -175,12 +215,14 @@ int Linker::loadDataFromFiles(){
                 {
                     string sectionName = parsedLine[0].substr(2);
                     currSectionID = LinkerSection::findSectionID(thisFileID, sectionName);
+                    currSectionSize = stoi(parsedLine[1]);
                 }
                 else
                 {
 
                     LinkerSection* sctn = LinkerSection::getLinkerSection(thisFileID, currSectionID);
                     sctn->setCode(parsedLine[0]);
+                    sctn->setSize(currSectionSize);
                     cnt ++;
                     if(cnt == numOfSections){
                         cnt = 0;
@@ -214,7 +256,7 @@ int Linker::loadDataFromFiles(){
                 else
                 {
                     
-                    new LinkerReallocation(thisFileID, parsedLine[0], parsedLine[1], parsedLine[2]);
+                    new LinkerReallocation(thisFileID, parsedLine[0], parsedLine[1], parsedLine[2], currSectionID);
                     cntRela++;
 
                     if(cntRela == numOfReallocations){
@@ -241,14 +283,105 @@ int Linker::loadDataFromFiles(){
     return 0;
 }
 
+void Linker::writeToFile(){
+
+}
+
 int Linker::mapSections(){
-    loadDataFromFiles();
+
+    for(const auto& place : places){ // resolve -place argument by putting sections in those spots
+        string sectionName = place.first;
+        string location = place.second;
+        uint32_t locationInt = hexToUint32(location);
+        bool found = false;
+
+        for(int i = 1; i <= numberOfFIles; i++){
+
+            int sctnID = LinkerSection::findSectionID(i, sectionName);
+            if(sctnID == -1)continue;
+            LinkerSection* sctn = LinkerSection::getLinkerSection(i, sctnID);
+            found = true;
+
+            sctn->map(locationInt);
+            if(locationInt + sctn->getSize() > nextSectionAddr){
+                nextSectionAddr = locationInt + sctn->getSize();
+            }
+            locationInt += sctn->getSize();
+
+        }
+        if(!found){
+            cout<<"------------------------------------------------"<<endl;
+            std::cerr << "Error - Linker: Section not found for the place argument: " << std::endl;
+            cout<<"------------------------------------------------"<<endl;
+            return -1;
+        }
+    }
+
+    // check if they overlap
+    if(LinkerSection::getMappedSectionsList().size()!=0){
+
+        for(LinkerSection* sctn : LinkerSection::getMappedSectionsList()){
+
+            for(LinkerSection* tmp : LinkerSection::getMappedSectionsList()){
+                if(sctn == tmp)continue;
+
+                if(overlap(sctn->getStartAdress(), sctn->getSize(), tmp->getStartAdress(), tmp->getSize())){
+                    cout<<"------------------------------------------------"<<endl;
+                    std::cerr << "Error - Linker: Sections overlap: " <<sctn->getFileID() << ":" << sctn->getName()<<
+                        " and "<<tmp->getFileID() << ":" << tmp->getName()<< std::endl;
+                    cout<<"------------------------------------------------"<<endl;
+                    return -1;
+                }
+            }
+        }
+    }
+    // map all other sections
+    for(int i = 1; i <= numberOfFIles; i++){
+        for(LinkerSection* sctn : LinkerSection::getSectionList()){
+            // find the next section to be mapped
+            if(sctn->getFileID() == i && !sctn->isMapped() && sctn->getId() != 0){
+                sctn->map(nextSectionAddr);
+                nextSectionAddr += sctn->getSize();
+
+                // find sections in other files that have the same name
+                for(int j = i; j <= numberOfFIles; j++){
+
+                    for(LinkerSection* tmp : LinkerSection::getSectionList()){
+                        if(tmp->getFileID() == j && !tmp->isMapped() && tmp->getName() == sctn->getName()){
+                            tmp->map(nextSectionAddr);
+                            nextSectionAddr += tmp->getSize();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     return 0;
 }
 
 int Linker::resolveSymbolValues(){
-    return 0;
 
+    for(int i = 1; i <= numberOfFIles; i++){
+        for(LinkerSymbol* sym : LinkerSymbol::getAllSymbols()){
+            if(sym->getFileID() == i && sym->getType() == LinkerSymbolType::NOTYP && !sym->isResolved() && sym->isDefined()){
+                //resolve symbol
+                int sectionID = sym->getSectionID();
+                LinkerSection* sctn = LinkerSection::getLinkerSection(i, sectionID);
+                uint32_t addend = sctn->getStartAdress();
+
+                uint32_t finalValue = addend + hexToUint32(sym->getValue());
+
+                sym->setValue(uint32ToHexString(finalValue));
+                sym->setResolved(true);
+                int success = LinkerSymbol::addToGlobalSymTable(sym);
+                if(success == -1)return -1;
+
+            }
+        }
+    }
+    LinkerSymbol::printGlobalSymTable();
+    return 0;
 }
 
 int Linker::resolveReallocations(){
@@ -256,5 +389,9 @@ int Linker::resolveReallocations(){
 }
 
 void Linker::link(){
+    loadDataFromFiles();
     mapSections();
+    resolveSymbolValues();
+    resolveReallocations();
+    writeToFile();
 }

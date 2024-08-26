@@ -33,6 +33,8 @@ private:
 
     static vector<LinkerSymbol*> symbolList;
 
+    static vector<LinkerSymbol*> globalSymbolTable;
+
 public:
     LinkerSymbol(int fileID, string id, string value, string type, string scope, string sectionID, string name);
 
@@ -40,14 +42,22 @@ public:
 
     static LinkerSymbol* getSymbol(string name);
 
-    static void printLinkerSymbolList();
+    static void printGlobalSymTable();
 
     string getName(){
         return name;
     }
 
+    int getFileID(){
+        return fileID;
+    }
+
     string getValue(){
         return value;
+    }
+
+    bool isResolved(){
+        return resolved;
     }
 
     int getID(){
@@ -66,8 +76,8 @@ public:
         this->defined = defined;
     }
 
-    bool isResolved(){
-        return resolved;
+    int getSectionID(){
+        return sectionID;
     }
 
     void setResolved(bool resolved){
@@ -106,6 +116,25 @@ public:
 
     static vector<LinkerSymbol*> getAllSymbols(){
         return symbolList;
+    }
+
+    static vector<LinkerSymbol*> getGlobalSymbolTable(){
+        return globalSymbolTable;
+    }
+
+    static int addToGlobalSymTable(LinkerSymbol* s){
+        if(s->scope == Scope::GLOBAL){
+            for(LinkerSymbol* sym : globalSymbolTable){
+                if(sym->getName() == s->getName() && sym->getScope() == Scope::GLOBAL){
+                    cout<<"------------------------------------------------"<<endl;
+                    std::cerr << "Error - Linker: Global symbol with the same name already exists: "<<sym->getName() << std::endl;
+                    cout<<"------------------------------------------------"<<endl;
+                    return -1;
+                }
+            }
+        }
+        globalSymbolTable.push_back(s);
+        return 0;
     }
 
     static string intToHexString(int num) {

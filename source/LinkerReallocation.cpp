@@ -2,11 +2,12 @@
 
 vector<LinkerReallocation*> LinkerReallocation::reallocations;
 
-LinkerReallocation::LinkerReallocation(int fileID, string offset, string type, string symbolID){
+LinkerReallocation::LinkerReallocation(int fileID, string offset, string type, string symbolID, int sectionID){
     // cout<<"New linkerReallocation: SymbolID = "<<symbolID<< " - fileID = " <<fileID<<" - Offset = "<<offset<<" - type = "<<type<<endl;
     this->fileID = fileID;
     this->offset = offset;
     this->symbolID = stoi(symbolID);
+    this->sectionID = sectionID;
     this->type = type == "EXT_SYM_REALLOC" ? EXT_SYM_REALLOC : 
                     type == "LOCAL_SYM_REALLOC_THIRTY_TWO_BIT" ? LOCAL_SYM_REALLOC_THIRTY_TWO_BIT :
                     type == "LOCAL_SYM_REALLOC_TWELVE_BIT" ? LOCAL_SYM_REALLOC_TWELVE_BIT :

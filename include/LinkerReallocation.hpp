@@ -20,10 +20,11 @@ private:
     ReallocationType type;
     int symbolID;
     int fileID;
+    int sectionID;
 
 public:
 
-    LinkerReallocation(int fileID, string offset, string type, string symbolID);
+    LinkerReallocation(int fileID, string offset, string type, string symbolID, int sectionID);
 };
 
 #endif

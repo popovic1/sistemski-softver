@@ -45,9 +45,8 @@ int main(int argc, char** argv)
                 cout<<"--------------------------------------------------------------"<<endl;
                 return -1;
             }
-            string section = current.substr(7, addressIndex - 9);
+            string section = current.substr(7, addressIndex - 8);
             string address = current.substr(addressIndex);
-            cout<<section<<endl<<address<<endl;
             linker->addPlace(section, address);
         }
         else

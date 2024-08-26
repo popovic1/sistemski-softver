@@ -3,6 +3,7 @@
 
 
 std::vector<LinkerSection*> LinkerSection::sectionList;
+std::vector<LinkerSection*> LinkerSection::mappedSectionsList;
 
 int LinkerSection::findSectionID(int fileID, string name){
     for(LinkerSection* sctn : sectionList){
@@ -32,6 +33,13 @@ void LinkerSection::printCode(){
 void LinkerSection::modifyCode(int startPosition, int length, string modifiedCode){
     for(int i = 0; i<length; i++){
         this->code[startPosition + i] = modifiedCode[i];
+    }
+}
+
+void LinkerSection::printSectionList(){
+    cout << "FileID\tSectionID\tName\tMapped\tStartAddr\tSize"<<endl;
+    for(LinkerSection* sctn : sectionList){
+        cout << sctn->fileID << "\t" << sctn->id << "\t" << sctn->name << "\t" << sctn->mapped << "\t" << sctn->startAdress << "\t" << sctn->size <<endl;
     }
 }
 

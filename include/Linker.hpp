@@ -12,7 +12,8 @@ using namespace std;
 
 class Linker{
 private:
-    static int fileNumber;
+    static int numberOfFIles;
+    static int nextSectionAddr;
 
     unordered_map<string, string> places;
     string outputFileName;
@@ -33,8 +34,15 @@ public:
     std::string trimString(const std::string& str);
 
     int isNumber(std::string arg);
+    int hexToDecimal(string hex);
+    uint32_t hexToUint32(const std::string& hex);
+    std::string uint32ToHexString(uint32_t value);
+
+    bool overlap(uint32_t start1, uint32_t size1, uint32_t start2, uint32_t size2);
 
     int loadDataFromFiles();
+
+    void writeToFile();
 
     void link();
 

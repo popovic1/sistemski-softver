@@ -2,6 +2,7 @@
 #include "../include/LinkerSection.hpp"
 
 vector<LinkerSymbol*> LinkerSymbol::symbolList;
+vector<LinkerSymbol*> LinkerSymbol::globalSymbolTable;
 
 
 LinkerSymbol::LinkerSymbol(int fileID, string id, string value, string type, string scope, string sectionID, string name){
@@ -36,7 +37,13 @@ LinkerSymbol* LinkerSymbol::getSymbol(string name){
     return nullptr;
 }
 
-
+void LinkerSymbol::printGlobalSymTable(){
+    cout<< "FileID\tSectionID\tSymbolID\tValue\tType\tScope\tName"<<endl;
+    for(LinkerSymbol* sym : globalSymbolTable){
+        cout<< sym->fileID << "\t" << sym->sectionID << "\t" << sym->id << "\t" << sym->value << "\t" << sym->type << "\t" <<
+                sym->scope << "\t" << sym->name<<endl;
+    }
+}
 
 
 LinkerSymbol::~LinkerSymbol(){}
