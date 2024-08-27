@@ -7,7 +7,7 @@
 #include <sstream>
 #include <map>
 #include <algorithm>
-#include "../include/emulator.hpp"
+#include "../include/Emulator.hpp"
 
 Emulator::Emulator() {
     for(int i = 0; i < 14; i++) {
