@@ -19,12 +19,17 @@ ASSEMBLER_OBJ_FILES = $(patsubst %.cpp,$(BIN_DIR)/%.o,$(ASSEMBLER_SRC_FILES))
 LINKER_SRC_FILES = linkerMain.cpp Linker.cpp LinkerSymbol.cpp LinkerSection.cpp LinkerReallocation.cpp
 LINKER_OBJ_FILES = $(patsubst %.cpp,$(BIN_DIR)/%.o,$(LINKER_SRC_FILES))
 
+# Emulator source files
+EMULATOR_SRC_FILES = emulator.cpp
+EMULATOR_OBJ_FILES = $(patsubst %.cpp,$(BIN_DIR)/%.o,$(EMULATOR_SRC_FILES))
+
 # Executable names
 ASSEMBLER_TARGET = $(BIN_DIR)/assembler
 LINKER_TARGET = $(BIN_DIR)/linker
+EMULATOR_TARGET = $(BIN_DIR)/emulator.exe
 
 # Default target
-all: $(ASSEMBLER_TARGET) $(LINKER_TARGET) | $(O_DIR)
+all: $(ASSEMBLER_TARGET) $(LINKER_TARGET) $(EMULATOR_TARGET) | $(O_DIR)
 
 # Rule to link object files to create the assembler executable
 $(ASSEMBLER_TARGET): $(ASSEMBLER_OBJ_FILES) | $(BIN_DIR)
@@ -34,11 +39,19 @@ $(ASSEMBLER_TARGET): $(ASSEMBLER_OBJ_FILES) | $(BIN_DIR)
 $(LINKER_TARGET): $(LINKER_OBJ_FILES) | $(BIN_DIR)
 	$(CXX) $(LINKER_OBJ_FILES) -o $@
 
+# Rule to link object files to create the emulator executable
+$(EMULATOR_TARGET): $(EMULATOR_OBJ_FILES) | $(BIN_DIR)
+	$(CXX) $(EMULATOR_OBJ_FILES) -o $@
+
 # Rule to compile source files into object files for assembler
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Rule to compile source files into object files for linker
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Rule to compile source files into object files for emulator
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -67,3 +80,6 @@ assemble:
 link:
 	./bin/linker -hex -place=my_code@0x40000000 -place=math@0xF0000000 -o bin/program.hex \
 	$(O_DIR)/handler.o $(O_DIR)/math.o $(O_DIR)/main.o $(O_DIR)/isr_terminal.o $(O_DIR)/isr_timer.o $(O_DIR)/isr_software.o 
+
+emulate:
+	./bin/emulator.exe bin/program.hex

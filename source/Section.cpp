@@ -73,9 +73,9 @@ void Section::addLiteralPoolToCode(){
             cout<<"------------------------------------------"<<endl;
             return;
         }
-        string hex = entry->value;
+        string hex =entry->value;
 
-        if(isNumber(hex) == -1){
+        if(isNumber("0x" + hex) == -1){
             hex = "00000000";
         }
 
@@ -98,6 +98,10 @@ void Section::addLiteralPoolToCode(){
 int Section::isNumber(std::string arg) {
     if (arg.empty()) {
         return -1; // Error - Assembler: empty string
+    }
+
+    for(int i = 0; i<arg.length();i++){
+        arg[i] = tolower(arg[i]);
     }
 
     // Check for hexadecimal format (starts with "0x" or "0X")

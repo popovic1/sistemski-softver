@@ -95,6 +95,24 @@ public:
         return nullptr;
     }
 
+    string toLittleEndian(){
+        std::string littleEndianCode;
+
+        for (size_t i = 0; i < code.length(); i += 8) {
+            std::string instruction = code.substr(i, 8);
+
+            // Swap the byte order for little endian
+            std::string littleEndianInstruction;
+            for (int j = 6; j >= 0; j -= 2) {
+                littleEndianInstruction += instruction.substr(j, 2);
+            }
+
+            littleEndianCode += littleEndianInstruction;
+        }
+
+        return littleEndianCode;
+    }
+
     void printCode();
 
     static void printSectionList();

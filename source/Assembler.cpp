@@ -262,11 +262,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 Section::appendCode(code);
 
             }else{
-                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
-
-                if(entry == nullptr){
-                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
-                }
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 
                 entry->positionsInCode.push_back(currentLocation);
 
@@ -281,10 +277,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 symbol = Symbol::getSymbol(parsedLine[1]);
             }
 
-            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
-            if(entry == nullptr){
-                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
-            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
             entry->positionsInCode.push_back(currentLocation);
 
             // this will later add a reallocation for the location in the literal pool
@@ -330,11 +323,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 Section::appendCode(code);
 
             }else{
-                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
-
-                if(entry == nullptr){
-                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
-                }
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 
                 entry->positionsInCode.push_back(currentLocation);
 
@@ -349,10 +338,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 symbol = Symbol::getSymbol(parsedLine[1]);
             }
 
-            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
-            if(entry == nullptr){
-                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
-            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
             entry->positionsInCode.push_back(currentLocation);
 
             // this will later add a reallocation for the location in the literal pool
@@ -397,11 +383,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 Section::appendCode(code);
 
             }else{
-                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
-
-                if(entry == nullptr){
-                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
-                }
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 
                 entry->positionsInCode.push_back(currentLocation);
 
@@ -416,10 +398,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 symbol = Symbol::getSymbol(parsedLine[3]);
             }
 
-            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
-            if(entry == nullptr){
-                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
-            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
             entry->positionsInCode.push_back(currentLocation);
 
             // this will later add a reallocation for the location in the literal pool
@@ -464,11 +443,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 Section::appendCode(code);
 
             }else{
-                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
-
-                if(entry == nullptr){
-                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
-                }
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 
                 entry->positionsInCode.push_back(currentLocation);
 
@@ -483,10 +458,8 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 symbol = Symbol::getSymbol(parsedLine[3]);
             }
 
-            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
-            if(entry == nullptr){
-                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
-            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
+            
             entry->positionsInCode.push_back(currentLocation);
 
             // this will later add a reallocation for the location in the literal pool
@@ -530,11 +503,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 Section::appendCode(code);
 
             }else{
-                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
-
-                if(entry == nullptr){
-                    entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
-                }
+                LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                 
                 entry->positionsInCode.push_back(currentLocation);
 
@@ -549,10 +518,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                 symbol = Symbol::getSymbol(parsedLine[3]);
             }
 
-            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[3]);
-            if(entry == nullptr){
-                entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
-            }
+            LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[3]);
             entry->positionsInCode.push_back(currentLocation);
 
             // this will later add a reallocation for the location in the literal pool
@@ -894,12 +860,8 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         Section::appendCode(code);
 
                     }else{
-                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
-
-                        if(entry == nullptr){
-                            entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
-                        }
-                        
+                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
+                        cout<<"Literal: "<<hex<<endl;
                         entry->positionsInCode.push_back(currentLocation);
                         string code = "92" + string(1, hexDigits[regNum]) + "F0000";
                         Section::appendCode(code);
@@ -912,10 +874,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         if(!success) return -1;
                         symbol = Symbol::getSymbol(parsedLine[1].substr(1));                    
                     }
-                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1].substr(1));
-                    if(entry == nullptr){
-                        entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1].substr(1));
-                    }
+                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1].substr(1));
 
                     entry->positionsInCode.push_back(currentLocation);
 
@@ -971,11 +930,8 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         Section::appendCode(code);
 
                     }else{
-                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
+                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
 
-                        if(entry == nullptr){
-                            entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
-                        }
                         
                         entry->positionsInCode.push_back(currentLocation);
                         string code = "92" + string(1, hexDigits[regNum]) + "F0000";
@@ -994,10 +950,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         symbol = Symbol::getSymbol(parsedLine[1]);
                     }
 
-                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[1]);
-                    if(entry == nullptr){
-                        entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
-                    }
+                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[1]);
                     entry->positionsInCode.push_back(currentLocation);
 
                     // this will later add a reallocation for the location in the literal pool
@@ -1164,11 +1117,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         Section::appendCode(code);
 
                     }else{
-                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(hex);
-
-                        if(entry == nullptr){
-                            entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
-                        }
+                        LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(hex);
                         
                         entry->positionsInCode.push_back(currentLocation);
                         string code = "82F0" + string(1, hexDigits[regNum]) + "000";
@@ -1183,10 +1132,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                         symbol = Symbol::getSymbol(parsedLine[1]);
                     }
 
-                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->getEntry(parsedLine[2]);
-                    if(entry == nullptr){
-                        entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[2]);
-                    }
+                    LiteralPoolEntry* entry = Section::getActiveSection()->getLiteralPool()->insertEntry(parsedLine[2]);
                     entry->positionsInCode.push_back(currentLocation);
 
                     // this will later add a reallocation for the location in the literal pool
@@ -1540,6 +1486,7 @@ void Assembler::writeToFile(string inputFileName, string outputFileName){
         outFile<<"[]\tNumber_of_sections_with_code:\t"<<cntCode<<endl;
 
         for(Section* section : Section::getSectionList()){
+
             if(section->getId() == 0 || section->getSize() == 0)continue;
             outFile << "#." << section->getName()<< "\t" << section->getSize() <<endl;
             outFile << section->getCode()<<endl;

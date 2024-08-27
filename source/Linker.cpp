@@ -305,7 +305,7 @@ void Linker::writeToFile() {
     size_t remainingBytesInLine = 8; // Track how many bytes are left in the current line
 
     for (auto* section : sortedSections) {
-        const std::string& code = section->getCode();
+        string code = section->toLittleEndian();
         uint32_t address = section->getStartAdress();
         size_t codeIndex = 0;
 
@@ -452,7 +452,6 @@ int Linker::resolveReallocations(){
         
         if(rela->getType() == ReallocationType::LOCAL_SYM_REALLOC_THIRTY_TWO_BIT || rela->getType() == ReallocationType::GLOB_SYM_REALLOC){
             LinkerSection* sctn = LinkerSection::getLinkerSection(rela->getFileID(), rela->getSectionID());
-            
             uint32_t offset = hexToUint32(rela->getOffset());
             LinkerSymbol* symbol = LinkerSymbol::getLinkerSymbol(rela->getFileID(), rela->getSymbolID());
             if(symbol == nullptr || !symbol->isResolved()){
@@ -464,7 +463,7 @@ int Linker::resolveReallocations(){
             string correctValue = symbol->getValue();
             string code = sctn->getCode();
             for(int i = 0; i<8; i++){
-                code[offset + i] = correctValue[i];
+                code[offset*2 + i] = correctValue[i];
             }
 
             sctn->setCode(code);
@@ -472,9 +471,11 @@ int Linker::resolveReallocations(){
 
         }else if(rela->getType() == ReallocationType::EXT_SYM_REALLOC){
             LinkerSection* sctn = LinkerSection::getLinkerSection(rela->getFileID(), rela->getSectionID());
-            uint32_t offset = hexToDecimal(rela->getOffset());
+            uint32_t offset = hexToUint32(rela->getOffset());
+            
             LinkerSymbol* undSymbol = LinkerSymbol::getLinkerSymbol(rela->getFileID(), rela->getSymbolID());
             string symName = undSymbol->getName();
+            cout<<"Offset to symbol: " << symName << " " << offset<<endl;
             LinkerSymbol* symbol = LinkerSymbol::getGlobalSymbol(symName);
             if(symbol == nullptr || !symbol->isResolved()){
                 cout<<"------------------------------------------------"<<endl;
@@ -485,8 +486,10 @@ int Linker::resolveReallocations(){
             string correctValue = symbol->getValue();
             string code = sctn->getCode();
 
+            cout<<code.substr(offset, 8)<<endl;
+
             for(int i = 0; i<8; i++){
-                code[offset + i] = correctValue[i];
+                code[offset*2 + i] = correctValue[i];
             }
 
             sctn->setCode(code);
