@@ -1096,7 +1096,7 @@ int Assembler::handleInstructions(std::vector<string> parsedLine){
                     return -1;
                 }
 
-                string code = "80" + string(1, hexDigits[regNum2]) + "0" +  string(1, hexDigits[regNum2]) + "000";
+                string code = "80" + string(1, hexDigits[regNum2]) + "0" +  string(1, hexDigits[regNum]) + "000";
                 Section::appendCode(code);
 
             }else{ // vrednost u memoriji na mestu literal ili simbol
