@@ -20,7 +20,7 @@ LINKER_SRC_FILES = linkerMain.cpp Linker.cpp LinkerSymbol.cpp LinkerSection.cpp 
 LINKER_OBJ_FILES = $(patsubst %.cpp,$(BIN_DIR)/%.o,$(LINKER_SRC_FILES))
 
 # Emulator source files
-EMULATOR_SRC_FILES = emulator.cpp
+EMULATOR_SRC_FILES = Emulator.cpp
 EMULATOR_OBJ_FILES = $(patsubst %.cpp,$(BIN_DIR)/%.o,$(EMULATOR_SRC_FILES))
 
 # Executable names

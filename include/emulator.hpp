@@ -1,5 +1,5 @@
-#ifndef EMULATOR_H_
-#define EMULATOR_H_
+#ifndef EMULATOR_HPP_
+#define EMULATOR_HPP_
 
 #include <string>
 #include <iostream>

@@ -523,7 +523,7 @@ void Emulator::emulate() {
                 handleCSR(opcode, gprA, gprB, gprC, offset);
                 break;
             default:
-                std::cerr << "Unknown opcode: " << opcode << std::endl;
+                std::cerr << "Unknown oc: " << opcode << std::endl;
                 break;
         }
     }
