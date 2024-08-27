@@ -23,7 +23,9 @@ Emulator::~Emulator() {}
 
 std::string Emulator::toBigEndian(std::string val) {
     if (val.length() > 8) {
-        std::cerr << "Error: Invalid input length for conversion to big endian. Input: " << val << std::endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        cerr<<"Error - Emulator: Invalid input length for conversion to big endian:" + val<<endl;
+        cout<<"--------------------------------------------------------------"<<endl;
         return "";
     }else if(val.length()<8){
         while(val.length()<8){
@@ -42,7 +44,9 @@ void Emulator::setCSRValue(std::string regIndex, std::string value) {
     if (index < csr.size()) {
         csr[index] = value;
     } else {
-        std::cerr << "Error: CSR index out of bounds. Index: " << regIndex << std::endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        cerr<<"Error - Emulator: CSR index out of bounds. Index: " << regIndex<<endl;
+        cout<<"--------------------------------------------------------------"<<endl;
     }
 }
 
@@ -57,7 +61,10 @@ void Emulator::setRegisterValue(string reg, string value) {
         if (regNum < regs.size()) {
             regs[regNum] = value;
         } else {
-            std::cerr << "Error: Register index out of bounds. Register: " << reg << std::endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            std::cerr << "Error - Emulator: Register index out of bounds. Register: " << reg << std::endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            
         }
     }
 }
@@ -75,7 +82,10 @@ std::string Emulator::getRegisterValue(string reg) {
             std::transform(value.begin(), value.end(), value.begin(), ::toupper);
             return value;
         } else {
-            std::cerr << "Error: Register index out of bounds. Register: " << reg << std::endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            std::cerr << "Error - Emulator: Register index out of bounds. Register: " << reg << std::endl;
+            cout<<"--------------------------------------------------------------"<<endl;
+            
             return ""; 
         }
     }
@@ -87,7 +97,10 @@ std::string Emulator::getCSRValue( std::string regIndex) {
     if (index < csr.size()) {
         return csr[index];
     } else {
+        cout<<"--------------------------------------------------------------"<<endl;
         std::cerr << "Error: CSR index out of bounds. Index: " << regIndex << std::endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        
         return "00000000";
     }
 }
@@ -143,7 +156,10 @@ void Emulator::loadFromFile(std::string fileName) {
     std::string line; 
 
     if (!file.is_open()) {
-        std::cerr << "Error: Unable to open file: " << fileName << std::endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        std::cerr << "Error - Emulator: Unable to open file: " << fileName << std::endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        
         return;
     }
 
@@ -519,12 +535,17 @@ int main(int argc, char* argv[]) {
     string outputFile;
 
     if(argc > 2) {
-        cout << "ERROR: Too many arguments!" << endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        cout << "Error - Emulator: Invalid syntax." << endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        
         exit(0);
     }
     string programName = argv[1];
     if(programName.find(".hex") == string::npos) {
-        cout << "ERROR! Wrong file type!" << endl;
+        cout<<"--------------------------------------------------------------"<<endl;
+        cout << "Error - Emulator: No -hex found." << endl;
+        cout<<"--------------------------------------------------------------"<<endl;
         exit(0);
     }
 
