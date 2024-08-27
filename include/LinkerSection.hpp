@@ -56,7 +56,7 @@ public:
         this->startAdress = address;
     }
 
-    int getStartAdress(){
+    uint32_t getStartAdress(){
         return startAdress;
     }
 

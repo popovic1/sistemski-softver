@@ -65,5 +65,5 @@ assemble:
 	./bin/assembler -o $(O_DIR)/handler.o $(TEST_DIR)/handler.s
 
 link:
-	./bin/linker -hex -place=my_code@0x40000000 -place=math@0xF0000000 -o program.hex \
+	./bin/linker -hex -place=my_code@0x40000000 -place=math@0xF0000000 -o bin/program.hex \
 	$(O_DIR)/handler.o $(O_DIR)/math.o $(O_DIR)/main.o $(O_DIR)/isr_terminal.o $(O_DIR)/isr_timer.o $(O_DIR)/isr_software.o 

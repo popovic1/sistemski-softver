@@ -283,8 +283,70 @@ int Linker::loadDataFromFiles(){
     return 0;
 }
 
-void Linker::writeToFile(){
+void Linker::writeToFile() {
+    // Sort the mapped sections by startAddress
+    std::vector<LinkerSection*> sortedSections = LinkerSection::getMappedSectionsList();
 
+    // Sort the new vector by startAddress
+    std::sort(sortedSections.begin(), sortedSections.end(),
+        [](LinkerSection* a, LinkerSection* b) {
+            return a->getStartAdress() < b->getStartAdress();
+        });
+
+    std::ofstream outFile(this->outputFileName);
+    if (!outFile.is_open()) {
+        std::cerr << "Error opening file: " << outputFileName << std::endl;
+        return;
+    }
+
+    // Previous section information
+    uint32_t prevEndAddress = 0;
+    bool firstSection = true;
+    size_t remainingBytesInLine = 8; // Track how many bytes are left in the current line
+
+    for (auto* section : sortedSections) {
+        const std::string& code = section->getCode();
+        uint32_t address = section->getStartAdress();
+        size_t codeIndex = 0;
+
+        while (codeIndex < code.length()) {
+            if (!firstSection && address == prevEndAddress && remainingBytesInLine > 0) {
+                // If the current section starts immediately after the previous one, continue on the same line
+                size_t bytesToWrite = std::min(remainingBytesInLine * 2, code.length() - codeIndex); // Multiply by 2 because each byte is represented by two characters
+
+                for (size_t j = 0; j < bytesToWrite; j += 2) {
+                    outFile << code.substr(codeIndex + j, 2) << " ";
+                }
+
+                codeIndex += bytesToWrite;
+                remainingBytesInLine -= bytesToWrite / 2;
+                address += bytesToWrite / 2;
+            } else {
+                // Start a new line if either the sections are not contiguous or the line is full
+                if (!firstSection) {
+                    outFile << std::endl;
+                }
+                
+                // Write the address in hex format
+                outFile << std::hex << std::setw(8) << std::setfill('0') << address << ": ";
+                
+                size_t bytesInLine = std::min(size_t(8), (code.length() - codeIndex) / 2);
+                remainingBytesInLine = 8 - bytesInLine;
+
+                for (size_t j = 0; j < bytesInLine * 2; j += 2) {
+                    outFile << code.substr(codeIndex + j, 2) << " ";
+                }
+
+                codeIndex += bytesInLine * 2;
+                address += bytesInLine;
+            }
+
+            prevEndAddress = address;
+            firstSection = false;
+        }
+    }
+
+    outFile.close();
 }
 
 int Linker::mapSections(){
